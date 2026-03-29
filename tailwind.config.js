@@ -4,8 +4,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        navy: '#1E2761',
-        'filey-blue': '#3B82F6',
+        'filey-green': {
+          DEFAULT: '#8FA62F',
+          light: '#A3B84A',
+          dark: '#7A8F28',
+        },
+        charcoal: '#2D2D2D',
+      },
+      fontFamily: {
+        sans: ['Montserrat', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
       },
     },
   },

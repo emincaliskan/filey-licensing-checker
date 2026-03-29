@@ -88,7 +88,7 @@ export default function BulkCheck() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-navy">Bulk Postcode Check</h2>
+        <h2 className="text-2xl font-bold text-charcoal">Bulk Postcode Check</h2>
         <p className="text-sm text-gray-500 mt-1">
           Paste up to 50 postcodes (one per line) to get a quick summary. Uses default
           configuration: single household, 1 occupant.
@@ -101,12 +101,12 @@ export default function BulkCheck() {
           onChange={(e) => setInput(e.target.value)}
           rows={8}
           placeholder={'N16 8JN\nN15 4QR\nEN1 3PL\nE17 4PP\nN1 2XL'}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-filey-blue focus:border-filey-blue outline-none font-mono text-sm"
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-filey-green focus:border-filey-green outline-none font-mono text-sm"
         />
         <button
           onClick={handleCheck}
           disabled={loading || !input.trim()}
-          className="mt-3 px-6 py-2.5 bg-navy text-white rounded-lg font-medium hover:bg-navy/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="mt-3 px-6 py-2.5 bg-filey-green text-white rounded-lg font-medium hover:bg-filey-green-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {loading ? 'Checking...' : 'Check All Postcodes'}
         </button>
@@ -121,7 +121,7 @@ export default function BulkCheck() {
       {results && (
         <div className="bg-white rounded-xl shadow-md overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-navy text-white">
+            <thead className="bg-charcoal text-white">
               <tr>
                 <th className="px-4 py-3 text-sm font-medium">Postcode</th>
                 <th className="px-4 py-3 text-sm font-medium">Borough</th>

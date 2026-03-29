@@ -59,41 +59,46 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-navy text-white shadow-lg no-print">
+      <header className="bg-white border-t-4 border-filey-green shadow-sm no-print">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3" onClick={handleReset}>
-            <div className="w-10 h-10 bg-filey-blue rounded-lg flex items-center justify-center font-bold text-xl">
-              F
+            <div className="w-10 h-10 bg-filey-green rounded-lg flex items-center justify-center">
+              <svg viewBox="0 0 32 32" className="w-7 h-7">
+                <path d="M16 7L6 15h3v10h5v-6h4v6h5V15h3L16 7z" fill="white"/>
+              </svg>
             </div>
             <div>
-              <h1 className="text-xl font-bold">Filey Licensing Checker</h1>
-              <p className="text-blue-200 text-xs">Property Licensing Compliance Tool</p>
+              <h1 className="text-xl text-charcoal">
+                <span className="font-bold">Filey</span>
+                <span className="font-light">Properties</span>
+              </h1>
+              <p className="text-gray-400 text-xs tracking-wide uppercase">Licensing Checker</p>
             </div>
           </Link>
-          <nav className="flex gap-4 text-sm">
+          <nav className="flex gap-1 text-sm font-medium uppercase tracking-wide">
             <Link
               to="/"
-              className={`px-3 py-1 rounded ${location.pathname === '/' ? 'bg-filey-blue' : 'hover:bg-white/10'}`}
+              className={`px-3 py-1.5 rounded transition-colors ${location.pathname === '/' ? 'text-filey-green' : 'text-charcoal hover:text-filey-green'}`}
             >
               Check Property
             </Link>
             <Link
               to="/boroughs"
-              className={`px-3 py-1 rounded ${location.pathname === '/boroughs' ? 'bg-filey-blue' : 'hover:bg-white/10'}`}
+              className={`px-3 py-1.5 rounded transition-colors ${location.pathname === '/boroughs' ? 'text-filey-green' : 'text-charcoal hover:text-filey-green'}`}
             >
-              Borough Summary
+              Boroughs
             </Link>
             <Link
               to="/bulk"
-              className={`px-3 py-1 rounded ${location.pathname === '/bulk' ? 'bg-filey-blue' : 'hover:bg-white/10'}`}
+              className={`px-3 py-1.5 rounded transition-colors ${location.pathname === '/bulk' ? 'text-filey-green' : 'text-charcoal hover:text-filey-green'}`}
             >
               Bulk Check
             </Link>
             <Link
               to="/history"
-              className={`px-3 py-1 rounded ${location.pathname === '/history' ? 'bg-filey-blue' : 'hover:bg-white/10'}`}
+              className={`px-3 py-1.5 rounded transition-colors ${location.pathname === '/history' ? 'text-filey-green' : 'text-charcoal hover:text-filey-green'}`}
             >
               History
             </Link>
@@ -130,10 +135,10 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-navy text-blue-200 text-xs mt-12 no-print">
+      <footer className="bg-charcoal text-gray-300 text-xs mt-12 no-print">
         <div className="max-w-6xl mx-auto px-4 py-6 space-y-2">
           <p>
-            <strong>Disclaimer:</strong> This tool provides guidance based on publicly available
+            <strong className="text-white">Disclaimer:</strong> This tool provides guidance based on publicly available
             council licensing data. It does not constitute legal advice. Licensing schemes change
             frequently — always verify requirements directly with the relevant council before making
             decisions.
@@ -142,7 +147,7 @@ function App() {
             Data last updated: {boroughsData.metadata?.last_updated || 'Unknown'}. This tool covers
             selected London boroughs only.
           </p>
-          <p className="text-blue-300">
+          <p className="text-filey-green-light">
             © {new Date().getFullYear()} Filey Properties — Agent 1-L (Licensing Compliance)
           </p>
         </div>

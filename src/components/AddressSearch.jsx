@@ -131,7 +131,7 @@ export default function AddressSearch({ onAddressResolved }) {
 
   return (
     <div className="bg-white rounded-xl shadow-md p-6">
-      <h2 className="text-lg font-semibold text-navy mb-1">Step 1: Enter Property Address</h2>
+      <h2 className="text-lg font-semibold text-charcoal mb-1">Step 1: Enter Property Address</h2>
       <p className="text-sm text-gray-500 mb-4">
         Start typing an address to see suggestions, or enter a postcode directly.
       </p>
@@ -146,7 +146,7 @@ export default function AddressSearch({ onAddressResolved }) {
               onKeyDown={handleKeyDown}
               onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
               placeholder="e.g. 10 Amhurst Road, London or N16 8JN"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-filey-blue focus:border-filey-blue outline-none text-lg"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-filey-green focus:border-filey-green outline-none text-lg"
               autoFocus
               autoComplete="off"
             />
@@ -158,7 +158,7 @@ export default function AddressSearch({ onAddressResolved }) {
                     onClick={() => selectSuggestion(s)}
                     onMouseEnter={() => setHighlightIndex(i)}
                     className={`px-4 py-3 cursor-pointer text-sm border-b border-gray-50 last:border-0 ${
-                      i === highlightIndex ? 'bg-blue-50 text-navy' : 'hover:bg-gray-50'
+                      i === highlightIndex ? 'bg-green-50 text-charcoal' : 'hover:bg-gray-50'
                     }`}
                   >
                     <div className="font-medium text-gray-800 truncate">{s.display_name}</div>
@@ -173,7 +173,7 @@ export default function AddressSearch({ onAddressResolved }) {
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="px-6 py-3 bg-filey-blue text-white rounded-lg font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-6 py-3 bg-filey-green text-white rounded-lg font-medium hover:bg-filey-green-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? (
               <span className="flex items-center gap-2">
@@ -209,28 +209,28 @@ export default function AddressSearch({ onAddressResolved }) {
       )}
 
       {resolvedAddress && (
-        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
           {resolvedAddress.fullAddress && (
-            <p className="text-sm text-navy font-medium mb-3 truncate">
+            <p className="text-sm text-charcoal font-medium mb-3 truncate">
               {resolvedAddress.fullAddress}
             </p>
           )}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <span className="text-gray-500 block">Postcode</span>
-              <span className="font-semibold text-navy">{resolvedAddress.postcode}</span>
+              <span className="font-semibold text-charcoal">{resolvedAddress.postcode}</span>
             </div>
             <div>
               <span className="text-gray-500 block">Borough</span>
-              <span className="font-semibold text-navy">{resolvedAddress.borough}</span>
+              <span className="font-semibold text-charcoal">{resolvedAddress.borough}</span>
             </div>
             <div>
               <span className="text-gray-500 block">Ward</span>
-              <span className="font-semibold text-navy">{resolvedAddress.ward}</span>
+              <span className="font-semibold text-charcoal">{resolvedAddress.ward}</span>
             </div>
             <div>
               <span className="text-gray-500 block">Coordinates</span>
-              <span className="font-semibold text-navy text-xs">
+              <span className="font-semibold text-charcoal text-xs">
                 {resolvedAddress.latitude?.toFixed(4)}, {resolvedAddress.longitude?.toFixed(4)}
               </span>
             </div>

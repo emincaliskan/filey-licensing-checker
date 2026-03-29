@@ -53,7 +53,7 @@ export default function ResultsPanel({ results, addressData, propertyConfig, onR
       {/* Licence Cards */}
       {results.licences.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold text-navy mb-3">Applicable Licences</h3>
+          <h3 className="text-lg font-semibold text-charcoal mb-3">Applicable Licences</h3>
           <div className="grid gap-4 md:grid-cols-2">
             {results.licences.map((licence, i) => (
               <LicenceCard key={i} licence={licence} />
@@ -76,7 +76,7 @@ export default function ResultsPanel({ results, addressData, propertyConfig, onR
       <div className="flex flex-wrap gap-3 no-print">
         <button
           onClick={handleDownloadPdf}
-          className="px-5 py-2.5 bg-navy text-white rounded-lg font-medium hover:bg-navy/90 transition-colors"
+          className="px-5 py-2.5 bg-charcoal text-white rounded-lg font-medium hover:bg-charcoal/90 transition-colors"
         >
           Download Report as PDF
         </button>
@@ -94,7 +94,7 @@ export default function ResultsPanel({ results, addressData, propertyConfig, onR
         </button>
         <button
           onClick={onReset}
-          className="px-5 py-2.5 bg-filey-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
+          className="px-5 py-2.5 bg-filey-green text-white rounded-lg font-medium hover:bg-filey-green-dark transition-colors"
         >
           Check Another Property
         </button>

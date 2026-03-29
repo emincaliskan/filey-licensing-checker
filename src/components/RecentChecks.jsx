@@ -27,7 +27,7 @@ export default function RecentChecks() {
   if (history.length === 0) {
     return (
       <div className="bg-white rounded-xl shadow-md p-8 text-center text-gray-500">
-        <h2 className="text-2xl font-bold text-navy mb-2">Recent Checks</h2>
+        <h2 className="text-2xl font-bold text-charcoal mb-2">Recent Checks</h2>
         <p>No checks yet. Use the Check Property tab to get started.</p>
       </div>
     );
@@ -36,7 +36,7 @@ export default function RecentChecks() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-navy">Recent Checks</h2>
+        <h2 className="text-2xl font-bold text-charcoal">Recent Checks</h2>
         <button
           onClick={clearHistory}
           className="text-sm text-red-600 hover:text-red-800 hover:underline"
@@ -62,7 +62,7 @@ export default function RecentChecks() {
                 <td className="px-4 py-3 text-sm text-gray-500">
                   {new Date(entry.date).toLocaleDateString('en-GB')}
                 </td>
-                <td className="px-4 py-3 text-sm font-medium text-navy">{entry.postcode}</td>
+                <td className="px-4 py-3 text-sm font-medium text-charcoal">{entry.postcode}</td>
                 <td className="px-4 py-3 text-sm">{entry.borough}</td>
                 <td className="px-4 py-3 text-sm">{entry.ward}</td>
                 <td className="px-4 py-3">

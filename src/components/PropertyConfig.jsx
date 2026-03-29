@@ -50,7 +50,7 @@ export default function PropertyConfig({ onSubmit }) {
 
   return (
     <div className="bg-white rounded-xl shadow-md p-6">
-      <h2 className="text-lg font-semibold text-navy mb-1">Step 2: Property Configuration</h2>
+      <h2 className="text-lg font-semibold text-charcoal mb-1">Step 2: Property Configuration</h2>
       <p className="text-sm text-gray-500 mb-4">
         Tell us about the property and how it will be occupied.
       </p>
@@ -68,7 +68,7 @@ export default function PropertyConfig({ onSubmit }) {
                   value={value}
                   checked={config.property_type === value}
                   onChange={(e) => handleChange('property_type', e.target.value)}
-                  className="text-filey-blue focus:ring-filey-blue"
+                  className="text-filey-green focus:ring-filey-blue"
                 />
                 <span className="text-sm">{label}</span>
               </label>
@@ -85,7 +85,7 @@ export default function PropertyConfig({ onSubmit }) {
             <select
               value={config.num_occupants}
               onChange={(e) => handleChange('num_occupants', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-filey-blue focus:border-filey-blue"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-filey-green focus:border-filey-green"
             >
               <option value="">Select...</option>
               {[1, 2, 3, 4, 5, 6, 7, '8+'].map((n) => (
@@ -102,7 +102,7 @@ export default function PropertyConfig({ onSubmit }) {
             <select
               value={config.num_households}
               onChange={(e) => handleChange('num_households', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-filey-blue focus:border-filey-blue"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-filey-green focus:border-filey-green"
             >
               <option value="">Select...</option>
               {[1, 2, 3, 4, '5+'].map((n) => (
@@ -119,7 +119,7 @@ export default function PropertyConfig({ onSubmit }) {
             <select
               value={config.shares_facilities}
               onChange={(e) => handleChange('shares_facilities', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-filey-blue focus:border-filey-blue"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-filey-green focus:border-filey-green"
             >
               <option value="">Select...</option>
               <option value="yes">Yes</option>
@@ -140,7 +140,7 @@ export default function PropertyConfig({ onSubmit }) {
                   value={value}
                   checked={config.tenancy_type === value}
                   onChange={(e) => handleChange('tenancy_type', e.target.value)}
-                  className="text-filey-blue focus:ring-filey-blue"
+                  className="text-filey-green focus:ring-filey-blue"
                 />
                 <span className="text-sm">{label}</span>
               </label>
@@ -165,7 +165,7 @@ export default function PropertyConfig({ onSubmit }) {
                   type="checkbox"
                   checked={config[field]}
                   onChange={(e) => handleChange(field, e.target.checked)}
-                  className="mt-0.5 text-filey-blue focus:ring-filey-blue rounded"
+                  className="mt-0.5 text-filey-green focus:ring-filey-blue rounded"
                 />
                 <span className="text-sm">{label}</span>
               </label>
@@ -176,7 +176,7 @@ export default function PropertyConfig({ onSubmit }) {
         <button
           type="submit"
           disabled={!isValid}
-          className="w-full py-3 bg-navy text-white rounded-lg font-medium hover:bg-navy/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-lg"
+          className="w-full py-3 bg-filey-green text-white rounded-lg font-medium hover:bg-filey-green-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-lg"
         >
           Check Licensing Requirements
         </button>

@@ -8,7 +8,7 @@ export default function LicenceCard({ licence }) {
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
       <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-        <h3 className="font-semibold text-navy text-lg">{licence.type} Licence</h3>
+        <h3 className="font-semibold text-charcoal text-lg">{licence.type} Licence</h3>
         <span
           className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[licence.status] || statusColors.active}`}
         >
@@ -58,7 +58,7 @@ export default function LicenceCard({ licence }) {
             <div>
               <div className="flex items-baseline gap-2">
                 <span className="text-gray-500">Standard Fee: </span>
-                <span className="font-bold text-lg text-navy">
+                <span className="font-bold text-lg text-charcoal">
                   £{licence.fee.baseFee.toLocaleString()}
                 </span>
               </div>
@@ -101,7 +101,7 @@ export default function LicenceCard({ licence }) {
             href={licence.application_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block mt-2 px-4 py-2 bg-filey-blue text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
+            className="inline-block mt-2 px-4 py-2 bg-filey-green text-white rounded-lg text-sm font-medium hover:bg-filey-green-dark transition-colors"
           >
             Apply Now &rarr;
           </a>

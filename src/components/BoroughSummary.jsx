@@ -45,7 +45,7 @@ export default function BoroughSummary() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-navy">Borough Licensing Summary</h2>
+        <h2 className="text-2xl font-bold text-charcoal">Borough Licensing Summary</h2>
         <p className="text-sm text-gray-500 mt-1">
           Overview of all supported boroughs and their current licensing schemes.
           Data last updated: {boroughsData.metadata?.last_updated || 'Unknown'}
@@ -54,7 +54,7 @@ export default function BoroughSummary() {
 
       <div className="bg-white rounded-xl shadow-md overflow-x-auto">
         <table className="w-full text-left">
-          <thead className="bg-navy text-white">
+          <thead className="bg-charcoal text-white">
             <tr>
               <th className="px-3 py-3 text-sm font-medium">Borough</th>
               <th className="px-3 py-3 text-sm font-medium">Mandatory HMO</th>
@@ -67,12 +67,12 @@ export default function BoroughSummary() {
             {boroughs.map((borough) => (
               <tr key={borough.short_name} className="hover:bg-gray-50">
                 <td className="px-3 py-2">
-                  <div className="font-semibold text-navy text-sm">{borough.short_name}</div>
+                  <div className="font-semibold text-charcoal text-sm">{borough.short_name}</div>
                   <a
                     href={borough.council_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-filey-blue hover:underline"
+                    className="text-xs text-filey-green hover:underline"
                   >
                     Council website
                   </a>

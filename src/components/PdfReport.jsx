@@ -6,7 +6,7 @@ export function generatePdfReport({ results, addressData, propertyConfig }) {
   let y = 20;
 
   // Header
-  doc.setFillColor(30, 39, 97); // navy
+  doc.setFillColor(143, 166, 47); // filey green
   doc.rect(0, 0, pageWidth, 40, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(20);
@@ -21,7 +21,7 @@ export function generatePdfReport({ results, addressData, propertyConfig }) {
   y = 50;
 
   // Property Details
-  doc.setTextColor(30, 39, 97);
+  doc.setTextColor(45, 45, 45);
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.text('Property Details', 15, y);
@@ -70,7 +70,7 @@ export function generatePdfReport({ results, addressData, propertyConfig }) {
 
   // Licence Details
   if (results.licences.length > 0) {
-    doc.setTextColor(30, 39, 97);
+    doc.setTextColor(45, 45, 45);
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.text('Licence Requirements', 15, y);
@@ -127,7 +127,7 @@ export function generatePdfReport({ results, addressData, propertyConfig }) {
       y = 20;
     }
 
-    doc.setTextColor(30, 39, 97);
+    doc.setTextColor(45, 45, 45);
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.text('Notes & Upcoming Changes', 15, y);
