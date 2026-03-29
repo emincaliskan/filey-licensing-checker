@@ -1,0 +1,468 @@
+{
+  "metadata": {
+    "last_updated": "2026-03-29",
+    "version": "1.0.0",
+    "notes": "Borough licensing data for North and East London. Update this file when council schemes change."
+  },
+  "hackney": {
+    "name": "London Borough of Hackney",
+    "short_name": "Hackney",
+    "council_url": "https://hackney.gov.uk/property-licensing/",
+    "mandatory_hmo": {
+      "active": true,
+      "scope": "borough-wide",
+      "start_date": null,
+      "end_date": null,
+      "description": "Properties occupied by 5+ people from 2+ households",
+      "min_occupants": 5,
+      "min_households": 2,
+      "fee": 950,
+      "fee_notes": "£875 for accredited landlords",
+      "discounts": {
+        "accredited_landlord": 75
+      },
+      "application_url": "https://propertylicensing.hackney.gov.uk/",
+      "conditions_summary": "Standard mandatory HMO conditions apply including fire safety, room sizes, and amenity standards."
+    },
+    "additional_hmo": {
+      "active": true,
+      "status": "coming_into_force",
+      "scope": "borough-wide",
+      "start_date": "2026-05-01",
+      "end_date": "2031-04-30",
+      "applications_open": "2026-03-01",
+      "description": "HMOs occupied by 3-4 people from 2+ households who share facilities (kitchen/bathroom). Includes shared houses, flats in converted houses, bedsit-type HMOs.",
+      "min_occupants": 3,
+      "max_occupants": 4,
+      "min_households": 2,
+      "requires_shared_facilities": true,
+      "section_257_exempt": true,
+      "fee": 1400,
+      "discounts": {
+        "epc_b": 100,
+        "epc_c": 50,
+        "accredited_landlord": 100,
+        "multiple_flats_same_block": 100
+      },
+      "application_url": "https://propertylicensing.hackney.gov.uk/",
+      "conditions_summary": "Licence conditions include property management standards, fire safety, and maximum occupancy limits."
+    },
+    "selective": {
+      "active": true,
+      "status": "coming_into_force",
+      "scope": "17 wards",
+      "start_date": "2026-05-01",
+      "end_date": "2031-04-30",
+      "applications_open": "2026-03-01",
+      "description": "Properties occupied by a single household or two unrelated sharers in designated wards.",
+      "covered_wards": [
+        "Brownswood",
+        "Cazenove",
+        "Clissold",
+        "Dalston",
+        "De Beauvoir",
+        "Hackney Central",
+        "Hackney Downs",
+        "Hackney Wick",
+        "Homerton",
+        "King's Park",
+        "Lea Bridge",
+        "London Fields",
+        "Shacklewell",
+        "Springfield",
+        "Stamford Hill West",
+        "Stoke Newington",
+        "Victoria"
+      ],
+      "excluded_wards": [
+        "Hoxton East & Shoreditch",
+        "Woodberry Down",
+        "Hackney Marshes",
+        "Leabridge"
+      ],
+      "fee": 925,
+      "discounts": {
+        "epc_b": 100,
+        "epc_c": 50,
+        "accredited_landlord": 100,
+        "multiple_flats_same_block": 100
+      },
+      "application_url": "https://propertylicensing.hackney.gov.uk/",
+      "conditions_summary": "Standard selective licensing conditions including gas safety, electrical safety, and tenancy management."
+    },
+    "upcoming_changes": [
+      {
+        "description": "New additional HMO licensing and selective licensing schemes start 1 May 2026. Applications open from 1 March 2026.",
+        "date": "2026-05-01",
+        "type": "new_scheme"
+      }
+    ],
+    "penalties": {
+      "description": "Unlimited fines on prosecution, criminal record, rent repayment orders, banning orders.",
+      "max_fine": "Unlimited (on prosecution)",
+      "civil_penalty_max": 30000,
+      "other": ["Rent repayment orders", "Banning orders", "Criminal record"]
+    }
+  },
+  "haringey": {
+    "name": "London Borough of Haringey",
+    "short_name": "Haringey",
+    "council_url": "https://www.haringey.gov.uk/housing/private-renting/property-licensing",
+    "mandatory_hmo": {
+      "active": true,
+      "scope": "borough-wide",
+      "start_date": null,
+      "end_date": null,
+      "description": "Properties occupied by 5+ people from 2+ households",
+      "min_occupants": 5,
+      "min_households": 2,
+      "fee": null,
+      "fee_notes": "Contact council for current fee",
+      "discounts": {},
+      "application_url": "https://propertylicensing.haringey.gov.uk/",
+      "conditions_summary": "Standard mandatory HMO conditions apply."
+    },
+    "additional_hmo": {
+      "active": true,
+      "status": "active",
+      "scope": "borough-wide",
+      "start_date": "2024-06-17",
+      "end_date": "2029-06-16",
+      "description": "HMOs with 3-4 people from 2+ households who share facilities. Also includes Section 257 HMOs (converted flats where less than two-thirds are owner-occupied and conversion didn't comply with Building Regs).",
+      "min_occupants": 3,
+      "max_occupants": 4,
+      "min_households": 2,
+      "requires_shared_facilities": true,
+      "section_257_exempt": false,
+      "fee": 1360,
+      "fee_notes": "Paid in two instalments — Part A on application, Part B before licence issued",
+      "discounts": {
+        "accredited_landlord": 50,
+        "epc_abc": 50
+      },
+      "application_url": "https://propertylicensing.haringey.gov.uk/",
+      "conditions_summary": "Standard additional HMO licensing conditions including property management, fire safety, and amenity standards."
+    },
+    "selective": {
+      "active": true,
+      "status": "active",
+      "scope": "specific wards",
+      "start_date": "2022-11-17",
+      "end_date": "2027-11-16",
+      "description": "Properties let to a single household or two unrelated sharers in designated wards in the eastern part of the borough.",
+      "covered_wards": [
+        "Bruce Grove",
+        "Hermitage & Gardens",
+        "Northumberland Park",
+        "South Tottenham",
+        "St Ann's",
+        "Tottenham Central",
+        "Tottenham Hale",
+        "West Green",
+        "White Hart Lane",
+        "Woodside"
+      ],
+      "fee": 680,
+      "fee_notes": "Paid in two instalments",
+      "discounts": {
+        "accredited_landlord": 50,
+        "epc_abc": 50
+      },
+      "application_url": "https://propertylicensing.haringey.gov.uk/",
+      "conditions_summary": "Standard selective licensing conditions apply."
+    },
+    "upcoming_changes": [
+      {
+        "description": "Selective licensing scheme runs until November 2027. Watch for renewal consultations from mid-2027.",
+        "date": "2027-11-16",
+        "type": "expiry"
+      }
+    ],
+    "penalties": {
+      "description": "Minimum £2,500 for mild offences, up to £27,500 for serious breaches via Civil Penalty Notices. Council has recently imposed fines exceeding £20,000.",
+      "max_fine": 27500,
+      "civil_penalty_max": 27500,
+      "other": ["Rent repayment orders"]
+    }
+  },
+  "enfield": {
+    "name": "London Borough of Enfield",
+    "short_name": "Enfield",
+    "council_url": "https://www.enfield.gov.uk/services/housing/private-rented-property-licensing",
+    "mandatory_hmo": {
+      "active": true,
+      "scope": "borough-wide",
+      "start_date": null,
+      "end_date": null,
+      "description": "Properties occupied by 5+ people from 2+ households",
+      "min_occupants": 5,
+      "min_households": 2,
+      "fee": 1616,
+      "fee_notes": "£1,616 for up to 5 lettable rooms",
+      "discounts": {},
+      "application_url": "https://www.enfield.gov.uk/services/housing/private-rented-property-licensing",
+      "conditions_summary": "Standard mandatory HMO conditions apply."
+    },
+    "additional_hmo": {
+      "active": true,
+      "status": "active",
+      "scope": "borough-wide",
+      "start_date": "2025-09-01",
+      "end_date": "2030-08-31",
+      "description": "HMOs with 3-4 people from 2+ households who share amenities. Excludes Section 257 HMOs.",
+      "min_occupants": 3,
+      "max_occupants": 4,
+      "min_households": 2,
+      "requires_shared_facilities": true,
+      "section_257_exempt": true,
+      "fee": 1450,
+      "discounts": {},
+      "application_url": "https://www.enfield.gov.uk/services/housing/private-rented-property-licensing",
+      "conditions_summary": "Standard additional licensing conditions apply."
+    },
+    "selective": {
+      "active": true,
+      "status": "active",
+      "scope": "14 wards",
+      "start_date": "2021-09-01",
+      "end_date": "2026-08-31",
+      "description": "Properties let to 1-2 persons or single family households in designated wards.",
+      "covered_wards": [
+        "Bowes",
+        "Chase",
+        "Edmonton Green",
+        "Enfield Highway",
+        "Enfield Lock",
+        "Haselbury",
+        "Jubilee",
+        "Lower Edmonton",
+        "Palmers Green",
+        "Ponders End",
+        "Southbury",
+        "Southgate Green",
+        "Turkey Street",
+        "Upper Edmonton"
+      ],
+      "fee": 735,
+      "discounts": {},
+      "application_url": "https://www.enfield.gov.uk/services/housing/selective-licensing-scheme",
+      "conditions_summary": "Standard selective licensing conditions apply."
+    },
+    "upcoming_changes": [
+      {
+        "description": "Current selective licensing scheme expires August 2026. New scheme proposed from September 2026, expanding from 14 to 17 wards (3 additional wards TBC pending Spring 2026 Cabinet decision). Proposed fee: £750 with discounts for accreditation, multi-dwelling, and EPC C+.",
+        "date": "2026-09-01",
+        "type": "expansion"
+      }
+    ],
+    "penalties": {
+      "description": "Civil penalty notices up to £30,000. Rent repayment orders.",
+      "max_fine": 30000,
+      "civil_penalty_max": 30000,
+      "other": ["Rent repayment orders"]
+    }
+  },
+  "waltham forest": {
+    "name": "London Borough of Waltham Forest",
+    "short_name": "Waltham Forest",
+    "council_url": "https://www.walthamforest.gov.uk/housing/private-sector-housing/private-rented-property-licensing-prpl",
+    "mandatory_hmo": {
+      "active": true,
+      "scope": "borough-wide",
+      "start_date": null,
+      "end_date": null,
+      "description": "Properties occupied by 5+ people from 2+ households",
+      "min_occupants": 5,
+      "min_households": 2,
+      "fee": 1650,
+      "fee_notes": "£1,650 for up to 8 units",
+      "discounts": {},
+      "application_url": "https://www.walthamforest.gov.uk/housing/private-sector-housing/private-rented-property-licensing-prpl/apply-property-licence-waltham-forest",
+      "conditions_summary": "Standard mandatory HMO conditions apply."
+    },
+    "additional_hmo": {
+      "active": true,
+      "status": "active",
+      "scope": "borough-wide",
+      "start_date": "2025-04-01",
+      "end_date": "2030-03-31",
+      "description": "3+ unrelated people sharing facilities, outside mandatory HMO scope.",
+      "min_occupants": 3,
+      "max_occupants": 4,
+      "min_households": 2,
+      "requires_shared_facilities": true,
+      "section_257_exempt": false,
+      "fee": 1200,
+      "discounts": {},
+      "application_url": "https://www.walthamforest.gov.uk/housing/private-sector-housing/private-rented-property-licensing-prpl/apply-property-licence-waltham-forest",
+      "conditions_summary": "Standard additional HMO licensing conditions apply."
+    },
+    "selective": {
+      "active": true,
+      "status": "active",
+      "scope": "most wards",
+      "start_date": "2025-05-01",
+      "end_date": "2030-04-30",
+      "description": "Individual, single family, or two unrelated sharers. Covers all wards except Hatch Lane, Highams Park North, and Endlebury.",
+      "covered_wards": ["ALL_EXCEPT_EXCLUDED"],
+      "excluded_wards": [
+        "Hatch Lane",
+        "Highams Park North",
+        "Endlebury"
+      ],
+      "fee": 895,
+      "fee_notes": "Split into two parts",
+      "discounts": {},
+      "application_url": "https://www.walthamforest.gov.uk/housing/private-sector-housing/private-rented-property-licensing-prpl/apply-property-licence-waltham-forest",
+      "conditions_summary": "Standard selective licensing conditions apply."
+    },
+    "upcoming_changes": [],
+    "penalties": {
+      "description": "Civil penalty notices up to £30,000. Rent repayment orders.",
+      "max_fine": 30000,
+      "civil_penalty_max": 30000,
+      "other": ["Rent repayment orders"]
+    }
+  },
+  "islington": {
+    "name": "London Borough of Islington",
+    "short_name": "Islington",
+    "council_url": "https://www.islington.gov.uk/housing/private-renting/property-licensing",
+    "mandatory_hmo": {
+      "active": true,
+      "scope": "borough-wide",
+      "start_date": null,
+      "end_date": null,
+      "description": "Properties occupied by 5+ people from 2+ households",
+      "min_occupants": 5,
+      "min_households": 2,
+      "fee": null,
+      "fee_notes": "Contact council for current fee",
+      "discounts": {},
+      "application_url": "https://www.islington.gov.uk/housing/private-renting/property-licensing",
+      "conditions_summary": "Standard mandatory HMO conditions apply."
+    },
+    "additional_hmo": {
+      "active": true,
+      "status": "coming_into_force",
+      "scope": "borough-wide",
+      "start_date": "2026-02-01",
+      "end_date": "2031-01-31",
+      "description": "3-4 unrelated people sharing facilities.",
+      "min_occupants": 3,
+      "max_occupants": 4,
+      "min_households": 2,
+      "requires_shared_facilities": true,
+      "section_257_exempt": false,
+      "fee": null,
+      "fee_notes": "Contact council for current fee",
+      "discounts": {},
+      "application_url": "https://www.islington.gov.uk/housing/private-renting/property-licensing",
+      "conditions_summary": "Standard additional HMO licensing conditions apply."
+    },
+    "selective": {
+      "active": true,
+      "status": "coming_into_force",
+      "scope": "7 wards (expanding)",
+      "start_date": null,
+      "end_date": null,
+      "description": "Expanding to 7 additional wards. Start date TBC.",
+      "covered_wards": [
+        "Barnsbury",
+        "Caledonian",
+        "Tufnell Park",
+        "Mildmay",
+        "Highbury",
+        "Junction",
+        "Laycock"
+      ],
+      "fee": 850,
+      "fee_notes": "£75 discount for accredited landlords; £50 for EPC A/B/C",
+      "discounts": {
+        "accredited_landlord": 75,
+        "epc_abc": 50
+      },
+      "application_url": "https://www.islington.gov.uk/housing/private-renting/property-licensing",
+      "conditions_summary": "Standard selective licensing conditions apply."
+    },
+    "upcoming_changes": [
+      {
+        "description": "Additional HMO licensing scheme starts 1 February 2026, borough-wide.",
+        "date": "2026-02-01",
+        "type": "new_scheme"
+      },
+      {
+        "description": "Selective licensing expanding to 7 additional wards: Barnsbury, Caledonian, Tufnell Park, Mildmay, Highbury, Junction, Laycock. Start date TBC.",
+        "date": null,
+        "type": "expansion"
+      }
+    ],
+    "penalties": {
+      "description": "Civil penalty notices up to £30,000. Rent repayment orders.",
+      "max_fine": 30000,
+      "civil_penalty_max": 30000,
+      "other": ["Rent repayment orders"]
+    }
+  },
+  "barnet": {
+    "name": "London Borough of Barnet",
+    "short_name": "Barnet",
+    "council_url": "https://www.barnet.gov.uk/housing/private-renting/property-licensing",
+    "mandatory_hmo": {
+      "active": true,
+      "scope": "borough-wide",
+      "start_date": null,
+      "end_date": null,
+      "description": "Properties occupied by 5+ people from 2+ households",
+      "min_occupants": 5,
+      "min_households": 2,
+      "fee": null,
+      "fee_notes": "Contact council for current fee",
+      "discounts": {},
+      "application_url": "https://www.barnet.gov.uk/housing/private-renting/property-licensing",
+      "conditions_summary": "Standard mandatory HMO conditions apply."
+    },
+    "additional_hmo": {
+      "active": true,
+      "status": "active",
+      "scope": "borough-wide",
+      "start_date": null,
+      "end_date": null,
+      "description": "3-4 people from 2+ households sharing facilities.",
+      "min_occupants": 3,
+      "max_occupants": 4,
+      "min_households": 2,
+      "requires_shared_facilities": true,
+      "section_257_exempt": false,
+      "fee": null,
+      "fee_notes": "Contact council for current fee",
+      "discounts": {},
+      "application_url": "https://www.barnet.gov.uk/housing/private-renting/property-licensing",
+      "conditions_summary": "Standard additional HMO licensing conditions apply."
+    },
+    "selective": {
+      "active": false,
+      "status": "not_active",
+      "scope": null,
+      "description": "No selective licensing scheme currently in force. Plans have stalled since 2022.",
+      "covered_wards": [],
+      "fee": null,
+      "discounts": {},
+      "application_url": null,
+      "conditions_summary": null
+    },
+    "upcoming_changes": [
+      {
+        "description": "Selective licensing plans stalled since 2022. No current proposals.",
+        "date": null,
+        "type": "info"
+      }
+    ],
+    "penalties": {
+      "description": "Civil penalty notices up to £30,000. Rent repayment orders.",
+      "max_fine": 30000,
+      "civil_penalty_max": 30000,
+      "other": ["Rent repayment orders"]
+    }
+  }
+}
