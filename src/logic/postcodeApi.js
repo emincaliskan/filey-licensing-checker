@@ -1,4 +1,5 @@
 const POSTCODES_IO_BASE = 'https://api.postcodes.io/postcodes';
+const NOMINATIM_BASE = 'https://nominatim.openstreetmap.org';
 
 export async function lookupPostcode(postcode) {
   const cleaned = postcode.replace(/\s+/g, '').toUpperCase();
@@ -25,6 +26,63 @@ export async function lookupPostcode(postcode) {
     ward: admin_ward,
     latitude,
     longitude,
+  };
+}
+
+export async function searchAddress(query) {
+  if (!query || query.length < 3) return [];
+
+  const params = new URLSearchParams({
+    q: query,
+    format: 'json',
+    addressdetails: '1',
+    countrycodes: 'gb',
+    limit: '6',
+    viewbox: '-0.51,51.28,0.33,51.69',
+    bounded: '1',
+  });
+
+  const response = await fetch(`${NOMINATIM_BASE}/search?${params}`, {
+    headers: { 'User-Agent': 'FileyLicensingChecker/1.0' },
+  });
+
+  if (!response.ok) return [];
+
+  const results = await response.json();
+
+  return results
+    .filter((r) => r.address && r.address.postcode)
+    .map((r) => ({
+      display_name: r.display_name,
+      latitude: parseFloat(r.lat),
+      longitude: parseFloat(r.lon),
+      postcode: r.address.postcode,
+      address: r.address,
+    }));
+}
+
+export async function reverseGeocode(latitude, longitude) {
+  const response = await fetch(
+    `${POSTCODES_IO_BASE}?lon=${longitude}&lat=${latitude}&limit=1`
+  );
+
+  if (!response.ok) {
+    throw new Error('Failed to resolve location. Please try again.');
+  }
+
+  const data = await response.json();
+
+  if (data.status !== 200 || !data.result || data.result.length === 0) {
+    throw new Error('Could not find postcode for this location.');
+  }
+
+  const nearest = data.result[0];
+  return {
+    postcode: nearest.postcode,
+    borough: nearest.admin_district,
+    ward: nearest.admin_ward,
+    latitude: nearest.latitude,
+    longitude: nearest.longitude,
   };
 }
 
