@@ -88,8 +88,8 @@ describe('wardMatcher', () => {
 });
 
 describe('Licensing Decision Logic', () => {
-  // Test 1: Hackney selective — Stoke Newington is a designated ward
-  it('Hackney selective licence for single occupant in Stoke Newington', () => {
+  // Test 1: Hackney transitional — no active schemes as of March 2026
+  it('Hackney no active selective in transitional period (March 2026)', () => {
     const result = checkLicensing({
       borough: 'Hackney',
       ward: 'Stoke Newington',
@@ -98,9 +98,9 @@ describe('Licensing Decision Logic', () => {
       shares_facilities: false,
       tenancy_type: 'single_household',
     });
-    expect(result.licences).toHaveLength(1);
-    expect(result.licences[0].type).toBe('Selective');
-    expect(result.licences[0].status).toBe('council_scheme');
+    // Schemes not active until May 2026
+    expect(result.licences).toHaveLength(0);
+    expect(result.warnings.length).toBeGreaterThan(0);
   });
 
   // Test 2: Hackney mandatory HMO — 5+ occupants, 2+ households, shared
@@ -117,8 +117,8 @@ describe('Licensing Decision Logic', () => {
     expect(types).toContain('Mandatory HMO');
   });
 
-  // Test 3: Hackney additional HMO — 3 occupants, 2 households, shared
-  it('Hackney additional HMO for 3-4 occupants sharing', () => {
+  // Test 3: Hackney additional HMO — not active in transitional period
+  it('Hackney no additional HMO in transitional period', () => {
     const result = checkLicensing({
       borough: 'Hackney',
       ward: 'Stoke Newington',
@@ -127,8 +127,10 @@ describe('Licensing Decision Logic', () => {
       shares_facilities: true,
       tenancy_type: 'hmo',
     });
+    // Upcoming scheme, not yet active
     const types = result.licences.map((l) => l.type);
-    expect(types).toContain('Additional HMO');
+    expect(types).not.toContain('Additional HMO');
+    expect(result.warnings.length).toBeGreaterThan(0);
   });
 
   // Test 4: Haringey additional HMO
@@ -159,11 +161,11 @@ describe('Licensing Decision Logic', () => {
     expect(types).toContain('Selective');
   });
 
-  // Test 6: Enfield — borough-wide selective
-  it('Enfield selective licence (borough-wide)', () => {
+  // Test 6: Enfield — ward-specific selective (NOT borough-wide)
+  it('Enfield selective in designated ward', () => {
     const result = checkLicensing({
       borough: 'Enfield',
-      ward: 'Any Ward',
+      ward: 'Chase',
       num_occupants: 2,
       num_households: 1,
       shares_facilities: false,
@@ -171,6 +173,19 @@ describe('Licensing Decision Logic', () => {
     });
     const types = result.licences.map((l) => l.type);
     expect(types).toContain('Selective');
+  });
+
+  it('Enfield no selective in non-designated ward', () => {
+    const result = checkLicensing({
+      borough: 'Enfield',
+      ward: 'Enfield Town',
+      num_occupants: 1,
+      num_households: 1,
+      shares_facilities: false,
+      tenancy_type: 'single_household',
+    });
+    const types = result.licences.map((l) => l.type);
+    expect(types).not.toContain('Selective');
   });
 
   // Test 7: Enfield mandatory HMO
@@ -230,6 +245,20 @@ describe('Licensing Decision Logic', () => {
     expect(result.verdictText).toBe('NO LICENCE CURRENTLY REQUIRED');
   });
 
+  // Test 10b: Barnet — Additional HMO now active
+  it('Barnet additional HMO is now active', () => {
+    const result = checkLicensing({
+      borough: 'Barnet',
+      ward: 'Finchley Church End',
+      num_occupants: 3,
+      num_households: 2,
+      shares_facilities: true,
+      tenancy_type: 'hmo',
+    });
+    const types = result.licences.map((l) => l.type);
+    expect(types).toContain('Additional HMO');
+  });
+
   // Test 11: Barnet — mandatory HMO still applies (national law)
   it('Barnet mandatory HMO still applies', () => {
     const result = checkLicensing({
@@ -244,11 +273,11 @@ describe('Licensing Decision Logic', () => {
     expect(types).toContain('Mandatory HMO');
   });
 
-  // Test 12: Newham — borough-wide selective
-  it('Newham selective licence (borough-wide)', () => {
+  // Test 12: Newham — near-borough-wide selective (excludes 2 wards)
+  it('Newham selective in covered ward', () => {
     const result = checkLicensing({
       borough: 'Newham',
-      ward: 'Stratford',
+      ward: 'Plaistow North',
       num_occupants: 1,
       num_households: 1,
       shares_facilities: false,
@@ -256,6 +285,19 @@ describe('Licensing Decision Logic', () => {
     });
     const types = result.licences.map((l) => l.type);
     expect(types).toContain('Selective');
+  });
+
+  it('Newham no selective in excluded ward (Royal Victoria)', () => {
+    const result = checkLicensing({
+      borough: 'Newham',
+      ward: 'Royal Victoria',
+      num_occupants: 1,
+      num_households: 1,
+      shares_facilities: false,
+      tenancy_type: 'single_household',
+    });
+    const types = result.licences.map((l) => l.type);
+    expect(types).not.toContain('Selective');
   });
 
   // Test 13: Tower Hamlets — additional HMO but no selective

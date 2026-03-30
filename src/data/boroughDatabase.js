@@ -1,30 +1,48 @@
 const BOROUGH_DATABASE = {
   metadata: {
     last_updated: "2026-03-30",
-    version: "2.0.0",
-    notes: "Corrected borough licensing data from official council guidance and Filey operational records."
+    version: "3.0.0",
+    notes: "Council-website-verified borough licensing data, March 2026."
   },
 
-  // HACKNEY
+  // HACKNEY - TRANSITIONAL PERIOD
   hackney: {
     name: "London Borough of Hackney",
     short_name: "Hackney",
     region: "London",
-    councilUrl: "https://hackney.gov.uk/property-licensing",
+    councilUrl: "https://hackney.gov.uk/property-licensing/",
+    postcodeChecker: "https://hackney.gov.uk/property-licensing/",
     mandatoryHMO: true,
     additionalHMO: {
-      active: true,
+      active: false,
+      upcoming: true,
+      startDate: "2026-05-01",
+      endDate: "2031-04-30",
+      applicationsOpen: "2026-03-01",
       coverage: "borough-wide",
       designatedWards: [],
-      description: "Borough-wide Additional HMO licensing for properties with 3+ persons from 2+ households sharing facilities."
+      excludedWards: [],
+      fee: 1400,
+      description: "New borough-wide Additional HMO scheme starts 1 May 2026. Applications open from 1 March 2026. Old scheme ended 30 September 2023."
     },
     selectiveLicensing: {
-      active: true,
-      coverage: "ward-specific",
-      designatedWards: ["Brownswood", "Cazenove", "Stoke Newington"],
-      description: "Selective licensing applies only in Brownswood, Cazenove, and Stoke Newington wards."
+      active: false,
+      upcoming: true,
+      startDate: "2026-05-01",
+      endDate: "2031-04-30",
+      applicationsOpen: "2026-03-01",
+      coverage: "near-borough-wide",
+      designatedWards: [
+        "Brownswood", "Cazenove", "Clissold", "Dalston", "De Beauvoir",
+        "Hackney Central", "Hackney Downs", "Hackney Wick", "Homerton",
+        "King's Park", "Lea Bridge", "London Fields", "Mildmay",
+        "Shacklewell", "Springfield", "Stamford Hill West", "Stoke Newington"
+      ],
+      excludedWards: ["Haggerston", "Hoxton East and Shoreditch", "Hoxton West", "Woodberry Down"],
+      fee: 925,
+      description: "New selective scheme (17 of 21 wards) starts 1 May 2026. Excludes Haggerston, Hoxton East & Shoreditch, Hoxton West, Woodberry Down. Old scheme ended 30 September 2023."
     },
-    notes: ""
+    notes: "TRANSITIONAL PERIOD: Old schemes ended 30 Sep 2023. New schemes start 1 May 2026. Currently only Mandatory HMO applies."
   },
 
   // HARINGEY
@@ -32,48 +50,70 @@ const BOROUGH_DATABASE = {
     name: "London Borough of Haringey",
     short_name: "Haringey",
     region: "London",
-    councilUrl: "https://www.haringey.gov.uk/housing/private-renting/property-licensing",
+    councilUrl: "https://haringey.gov.uk/housing/private-sector-renting/property-licensing",
+    postcodeChecker: "https://haringey.gov.uk/housing/private-sector-renting/property-licensing/selective-property-licensing/do-i-need-a-selective-licence",
     mandatoryHMO: true,
     additionalHMO: {
       active: true,
+      startDate: "2024-06-17",
+      endDate: "2029-06-16",
       coverage: "borough-wide",
       designatedWards: [],
-      description: "Haringey has borough-wide Additional HMO licensing."
+      excludedWards: [],
+      fee: 1360,
+      discounts: { accredited_landlord: 50, epc_abc: 50 },
+      description: "Borough-wide Additional HMO licensing started 17 June 2024."
     },
     selectiveLicensing: {
       active: true,
+      startDate: "2022-11-17",
+      endDate: "2027-11-16",
       coverage: "ward-specific",
       designatedWards: [
-        "Bounds Green", "Bruce Castle", "Noel Park", "Northumberland Park",
-        "Seven Sisters", "South Tottenham", "St Ann's", "Tottenham Central",
-        "Tottenham Hale", "West Green", "White Hart Lane", "Woodside",
-        "Hermitage & Gardens"
+        "Bounds Green", "Bruce Castle", "Harringay", "Hermitage & Gardens",
+        "Noel Park", "Northumberland Park", "Seven Sisters", "South Tottenham",
+        "St Ann's", "Tottenham Central", "Tottenham Hale", "West Green",
+        "White Hart Lane", "Woodside"
       ],
-      description: "Selective licensing applies in 13 designated wards, primarily in the Tottenham and north Haringey area."
+      excludedWards: [],
+      fee: 680,
+      discounts: { accredited_landlord: 50, epc_abc: 50 },
+      description: "Selective licensing in 14 designated wards in the eastern part of the borough."
     },
-    notes: "Most Filey properties in Haringey fall within selective licensing wards."
+    notes: ""
   },
 
-  // ENFIELD
+  // ENFIELD - WARD-SPECIFIC, NOT BOROUGH-WIDE
   enfield: {
     name: "London Borough of Enfield",
     short_name: "Enfield",
     region: "London",
-    councilUrl: "https://www.enfield.gov.uk/services/housing/property-licensing",
+    councilUrl: "https://www.enfield.gov.uk/services/housing/selective-licensing-scheme",
+    postcodeChecker: "https://enfield.metastreet.co.uk",
     mandatoryHMO: true,
     additionalHMO: {
       active: true,
       coverage: "borough-wide",
       designatedWards: [],
-      description: "Enfield has borough-wide Additional HMO licensing."
+      excludedWards: [],
+      description: "Borough-wide Additional HMO licensing."
     },
     selectiveLicensing: {
       active: true,
-      coverage: "borough-wide",
-      designatedWards: [],
-      description: "Enfield has BOROUGH-WIDE selective licensing. ALL privately rented properties require a licence."
+      startDate: "2021-09-01",
+      endDate: "2026-08-31",
+      coverage: "ward-specific",
+      usesPreMay2022Boundaries: true,
+      designatedWards: [
+        "Bowes", "Chase", "Edmonton Green", "Enfield Highway", "Enfield Lock",
+        "Haselbury", "Jubilee", "Lower Edmonton", "Palmers Green", "Ponders End",
+        "Southbury", "Southgate Green", "Turkey Street", "Upper Edmonton"
+      ],
+      excludedWards: [],
+      fee: 735,
+      description: "Selective licensing in 14 specific wards (pre-May 2022 boundaries). NOT borough-wide."
     },
-    notes: "Filey has 612+ properties in Enfield requiring Selective licensing. This is the largest licensing exposure."
+    notes: "Uses pre-May 2022 ward boundaries. New scheme proposed from Sep 2026 covering 17 wards."
   },
 
   // WALTHAM FOREST
@@ -81,19 +121,28 @@ const BOROUGH_DATABASE = {
     name: "London Borough of Waltham Forest",
     short_name: "Waltham Forest",
     region: "London",
-    councilUrl: "https://www.walthamforest.gov.uk/housing/private-rented-property-licensing",
+    councilUrl: "https://www.walthamforest.gov.uk/housing/private-sector-housing/private-rented-property-licensing-prpl/selective-licensing-scheme",
+    postcodeChecker: "https://www.walthamforest.gov.uk/housing/private-sector-housing/private-rented-property-licensing-prpl",
     mandatoryHMO: true,
     additionalHMO: {
       active: true,
+      startDate: "2025-04-01",
+      endDate: "2030-03-31",
       coverage: "borough-wide",
       designatedWards: [],
-      description: "Waltham Forest has borough-wide Additional HMO licensing."
+      excludedWards: [],
+      fee: 1200,
+      description: "Borough-wide Additional HMO licensing. Section 257 HMOs excluded."
     },
     selectiveLicensing: {
       active: true,
-      coverage: "borough-wide",
+      startDate: "2025-05-01",
+      endDate: "2030-04-30",
+      coverage: "near-borough-wide",
       designatedWards: [],
-      description: "Waltham Forest has BOROUGH-WIDE selective licensing."
+      excludedWards: ["Hatch Lane", "Highams Park North", "Endlebury"],
+      fee: 895,
+      description: "Selective licensing in 20 of 22 wards. Excludes Hatch Lane/Highams Park North and Endlebury."
     },
     notes: ""
   },
@@ -103,65 +152,86 @@ const BOROUGH_DATABASE = {
     name: "London Borough of Islington",
     short_name: "Islington",
     region: "London",
-    councilUrl: "https://www.islington.gov.uk/housing/private-renting/property-licensing",
+    councilUrl: "https://www.islington.gov.uk/housing/private-sector-housing/landlords/houses-in-multiple-occupation-hmos",
     mandatoryHMO: true,
     additionalHMO: {
       active: true,
+      startDate: "2026-02-01",
+      endDate: "2031-01-31",
       coverage: "borough-wide",
       designatedWards: [],
-      description: "Islington has borough-wide Additional HMO licensing."
+      excludedWards: [],
+      description: "Borough-wide Additional HMO licensing renewed 1 February 2026. Includes Section 257 HMOs."
     },
     selectiveLicensing: {
       active: true,
       coverage: "ward-specific",
       designatedWards: ["Finsbury Park", "Hillrise", "Tollington"],
-      description: "Selective licensing applies in Finsbury Park, Hillrise, and Tollington wards."
+      pendingExpansionWards: ["Barnsbury", "Caledonian", "Tufnell Park", "Mildmay", "Highbury", "Junction", "Laycock"],
+      excludedWards: [],
+      fee: 850,
+      discounts: { accredited_landlord: 75, epc_abc: 50 },
+      description: "Currently 3 wards. Expansion to 10 wards approved but start date not confirmed."
     },
-    notes: "Some Filey properties in Finsbury Park/Hillrise show 'Required=Yes' without a licence type — these need manual review."
+    notes: ""
   },
 
-  // BARNET
+  // BARNET - HAS Additional HMO (was incorrectly marked as none)
   barnet: {
     name: "London Borough of Barnet",
     short_name: "Barnet",
     region: "London",
-    councilUrl: "https://www.barnet.gov.uk/housing/private-renting",
+    councilUrl: "https://www.barnet.gov.uk/HMOlicensing",
     mandatoryHMO: true,
     additionalHMO: {
-      active: false,
-      coverage: "none",
+      active: true,
+      startDate: "2022-10-27",
+      endDate: "2027-10-27",
+      coverage: "borough-wide",
       designatedWards: [],
-      description: "Barnet does NOT currently have an Additional HMO licensing scheme."
+      excludedWards: [],
+      fee: 1560,
+      description: "Borough-wide Additional HMO licensing (Oct 2022 - Oct 2027). 10% discount for accredited landlords/charities."
     },
     selectiveLicensing: {
       active: false,
+      pending: true,
       coverage: "none",
       designatedWards: [],
-      description: "Barnet does NOT currently have a Selective licensing scheme."
+      excludedWards: [],
+      description: "Two phases approved (Phase 1: Burnt Oak, Colindale North, Colindale South; Phase 2: 10 additional wards) but NEITHER implemented due to software/resourcing delays."
     },
-    notes: "Only Mandatory HMO licensing applies in Barnet. No additional or selective schemes currently in force."
+    notes: "Additional HMO is active borough-wide. Selective licensing approved but NOT yet in force."
   },
 
-  // NEWHAM
+  // NEWHAM - 22 of 24 wards
   newham: {
     name: "London Borough of Newham",
     short_name: "Newham",
     region: "London",
-    councilUrl: "https://www.newham.gov.uk/housing/property-licensing",
+    councilUrl: "https://www.newham.gov.uk/housing-homes-homelessness/property-licensing-consultation",
     mandatoryHMO: true,
     additionalHMO: {
       active: true,
-      coverage: "borough-wide",
+      startDate: "2023-01-01",
+      endDate: "2028-01-01",
+      coverage: "near-borough-wide",
       designatedWards: [],
-      description: "Newham has borough-wide Additional HMO licensing."
+      excludedWards: ["Royal Victoria", "Stratford Olympic Park"],
+      fee: 1400,
+      description: "Additional HMO licensing in 22 of 24 wards. Excludes Royal Victoria and Stratford Olympic Park."
     },
     selectiveLicensing: {
       active: true,
-      coverage: "borough-wide",
+      startDate: "2023-06-01",
+      endDate: "2028-06-01",
+      coverage: "near-borough-wide",
       designatedWards: [],
-      description: "Newham has BOROUGH-WIDE selective licensing — ALL privately rented properties need a licence."
+      excludedWards: ["Royal Victoria", "Stratford Olympic Park"],
+      fee: 750,
+      description: "Selective licensing in 22 of 24 wards. Excludes Royal Victoria and Stratford Olympic Park. Newham's 3rd consecutive 5-year term."
     },
-    notes: "Newham pioneered borough-wide licensing in London."
+    notes: ""
   },
 
   // TOWER HAMLETS
@@ -169,19 +239,24 @@ const BOROUGH_DATABASE = {
     name: "London Borough of Tower Hamlets",
     short_name: "Tower Hamlets",
     region: "London",
-    councilUrl: "https://www.towerhamlets.gov.uk/lgnl/housing/private_housing/Property_licensing.aspx",
+    councilUrl: "https://www.towerhamlets.gov.uk/lgnl/housing/Private-tenants-landlords-and-homeowners/Private-Landlords/Additional_Licensing_Scheme.aspx",
     mandatoryHMO: true,
     additionalHMO: {
       active: true,
+      startDate: "2024-04-01",
+      endDate: "2029-04-01",
       coverage: "borough-wide",
       designatedWards: [],
-      description: "Tower Hamlets has Additional HMO licensing."
+      excludedWards: [],
+      fee: 756,
+      description: "Borough-wide Additional HMO licensing from 1 April 2024. Includes Section 257 HMOs. £54.50 per habitable room."
     },
     selectiveLicensing: {
       active: false,
       coverage: "none",
       designatedWards: [],
-      description: "Tower Hamlets does not currently have a Selective licensing scheme."
+      excludedWards: [],
+      description: "Previous selective scheme has ended. Replaced by borough-wide Additional HMO."
     },
     notes: ""
   },
@@ -191,55 +266,151 @@ const BOROUGH_DATABASE = {
     name: "London Borough of Barking and Dagenham",
     short_name: "Barking and Dagenham",
     region: "London",
-    councilUrl: "https://www.lbbd.gov.uk/housing/private-renting/property-licensing",
+    councilUrl: "https://www.lbbd.gov.uk/private-sector-housing/property-licensing",
+    mandatoryHMO: true,
+    additionalHMO: {
+      active: true,
+      startDate: "2025-01-09",
+      endDate: "2030-01-09",
+      coverage: "borough-wide",
+      designatedWards: [],
+      excludedWards: [],
+      fee: 1400,
+      description: "Borough-wide Additional HMO from 9 January 2025. Section 257 HMOs excluded. Up to £250 discount for satisfactory compliance."
+    },
+    selectiveLicensing: {
+      active: true,
+      startDate: "2025-04-06",
+      coverage: "ward-specific",
+      designatedWards: [],
+      excludedWards: [],
+      fee: 950,
+      description: "Selective licensing from 6 April 2025. Multi-designation approach — check council website for exact ward coverage."
+    },
+    notes: "Both schemes now active. Check council website for selective licensing ward designations."
+  },
+
+  // HAVERING - TRANSITIONAL
+  havering: {
+    name: "London Borough of Havering",
+    short_name: "Havering",
+    region: "London",
+    councilUrl: "https://www.havering.gov.uk/information-landlords/private-rented-property-licensing",
+    mandatoryHMO: true,
+    additionalHMO: {
+      active: true,
+      startDate: "2026-03-18",
+      endDate: "2031-03-17",
+      coverage: "borough-wide",
+      designatedWards: [],
+      excludedWards: [],
+      fee: 1400,
+      description: "New borough-wide Additional HMO licensing from 18 March 2026."
+    },
+    selectiveLicensing: {
+      active: true,
+      startDate: "2026-03-18",
+      endDate: "2031-03-17",
+      coverage: "ward-specific",
+      designatedWards: [
+        "Beam Park", "Harold Wood", "Rainham & Wennington",
+        "Rush Green & Crowlands", "Squirrels Heath", "St Alban's", "St Edwards"
+      ],
+      excludedWards: [],
+      fee: 950,
+      discounts: { epc_c_plus: 75, accredited_landlord: 100 },
+      description: "Selective licensing in 7 wards from 18 March 2026. Old scheme (Brooklands/Romford Town) ended January 2026."
+    },
+    notes: "New schemes started 18 March 2026, replacing the old Brooklands/Romford Town scheme."
+  },
+
+  // BRENT - 21 of 22 wards
+  brent: {
+    name: "London Borough of Brent",
+    short_name: "Brent",
+    region: "London",
+    councilUrl: "https://www.brent.gov.uk/housing/landlords/property-licensing",
     mandatoryHMO: true,
     additionalHMO: {
       active: true,
       coverage: "borough-wide",
       designatedWards: [],
-      description: "Barking and Dagenham has implemented Additional HMO licensing. This scheme was expected to come into force in early 2025 — verify current status with council."
+      excludedWards: [],
+      description: "Borough-wide Additional HMO licensing."
     },
     selectiveLicensing: {
-      active: false,
-      coverage: "none",
+      active: true,
+      coverage: "near-borough-wide",
       designatedWards: [],
-      description: "No selective licensing scheme currently confirmed."
+      excludedWards: ["Wembley Park"],
+      fee: 640,
+      description: "Selective licensing in 21 of 22 wards across 2 designations. Only Wembley Park is excluded."
     },
-    notes: "\u26a0\ufe0f SCHEME STATUS UNCERTAIN — Was pending as of early 2025. Verify current Additional HMO scheme status with the council."
+    notes: ""
   },
 
-  // HAVERING
-  havering: {
-    name: "London Borough of Havering",
-    short_name: "Havering",
+  // REDBRIDGE - 17 wards
+  redbridge: {
+    name: "London Borough of Redbridge",
+    short_name: "Redbridge",
     region: "London",
-    councilUrl: "https://www.havering.gov.uk/housing/landlords",
+    councilUrl: "https://www.redbridge.gov.uk/housing/private-rentals/selective-licensing/",
     mandatoryHMO: true,
-    additionalHMO: { active: false, coverage: "none", designatedWards: [], description: "" },
+    additionalHMO: {
+      active: true,
+      coverage: "borough-wide",
+      designatedWards: [],
+      excludedWards: [],
+      description: "Borough-wide Additional HMO licensing."
+    },
     selectiveLicensing: {
       active: true,
       coverage: "ward-specific",
-      designatedWards: ["Romford Town"],
-      description: "Selective licensing in designated areas including Romford Town."
+      designatedWards: [
+        "Ilford Town", "Valentines",
+        "Aldborough", "Barkingside", "Chadwell", "Churchfields", "Clementswood",
+        "Cranbrook", "Fairlop", "Goodmayes", "Hainault", "Loxford",
+        "Mayfield", "Newbury", "Seven Kings", "South Woodford", "Wanstead Village"
+      ],
+      excludedWards: [],
+      fee: 860,
+      discounts: { accredited_landlord: 35 },
+      description: "Selective licensing across 17 wards in 2 designations."
     },
-    notes: "Limited Filey presence. Check council for latest designated wards."
+    notes: ""
   },
 
-  // LEWISHAM
+  // LEWISHAM - 16 wards
   lewisham: {
     name: "London Borough of Lewisham",
     short_name: "Lewisham",
     region: "London",
-    councilUrl: "https://lewisham.gov.uk/myservices/housing/landlords/property-licensing",
+    councilUrl: "https://lewisham.gov.uk/selectivelicensing",
+    postcodeChecker: "https://lewisham.gov.uk/selectivelicensing",
     mandatoryHMO: true,
-    additionalHMO: { active: false, coverage: "none", designatedWards: [], description: "" },
+    additionalHMO: {
+      active: true,
+      coverage: "borough-wide",
+      designatedWards: [],
+      excludedWards: [],
+      description: "Borough-wide Additional HMO licensing."
+    },
     selectiveLicensing: {
       active: true,
+      startDate: "2024-07-01",
+      endDate: "2029-07-01",
       coverage: "ward-specific",
-      designatedWards: [],
-      description: "Lewisham has selective licensing in designated areas. Check council website for current ward list."
+      usesPreMay2022Boundaries: true,
+      designatedWards: [
+        "Brockley", "Catford South", "Lewisham Central", "New Cross", "Perry Vale", "Rushey Green",
+        "Crofton Park", "Evelyn", "Ladywell", "Lee Green", "Sydenham",
+        "Bellingham", "Downham", "Forest Hill", "Grove Park", "Whitefoot"
+      ],
+      excludedWards: ["Telegraph Hill", "Blackheath"],
+      fee: 640,
+      description: "Selective licensing across 16 wards in 3 designations. Uses pre-May 2022 boundaries."
     },
-    notes: "Check council for latest designated areas."
+    notes: ""
   },
 
   // SOUTHWARK
@@ -247,134 +418,91 @@ const BOROUGH_DATABASE = {
     name: "London Borough of Southwark",
     short_name: "Southwark",
     region: "London",
-    councilUrl: "https://www.southwark.gov.uk/housing/landlords/property-licensing",
+    councilUrl: "https://www.southwark.gov.uk/housing/private-tenants-and-landlords/private-rented-property-licensing",
     mandatoryHMO: true,
-    additionalHMO: { active: false, coverage: "none", designatedWards: [], description: "" },
+    additionalHMO: {
+      active: true,
+      startDate: "2022-03-01",
+      endDate: "2027-02-28",
+      coverage: "borough-wide",
+      designatedWards: [],
+      excludedWards: [],
+      fee: 1365,
+      description: "Borough-wide Additional HMO licensing (March 2022 - February 2027). Includes Section 257 HMOs (no charge)."
+    },
     selectiveLicensing: {
       active: true,
       coverage: "ward-specific",
-      designatedWards: [],
-      description: "Southwark has selective licensing in designated areas."
+      designatedWards: [
+        "Newington", "Champion Hill", "Faraday", "St Giles", "Goose Green",
+        "North Walworth", "Nunhead & Queens Road", "Old Kent Road", "Peckham",
+        "Camberwell Green", "Chaucer", "Dulwich Hill", "Dulwich Wood",
+        "London Bridge & West Bermondsey", "Peckham Rye", "Rotherhithe",
+        "Rye Lane", "South Bermondsey", "Surrey Docks"
+      ],
+      excludedWards: [],
+      fee: 945,
+      description: "Selective licensing across 19 wards in 2 designations."
     },
     notes: ""
   },
 
-  // REDBRIDGE
-  redbridge: {
-    name: "London Borough of Redbridge",
-    short_name: "Redbridge",
-    region: "London",
-    councilUrl: "https://www.redbridge.gov.uk/housing/private-renting/property-licensing",
-    mandatoryHMO: true,
-    additionalHMO: { active: false, coverage: "none", designatedWards: [], description: "" },
-    selectiveLicensing: {
-      active: true,
-      coverage: "ward-specific",
-      designatedWards: [],
-      description: "Redbridge has selective licensing in designated areas."
-    },
-    notes: ""
-  },
-
-  // BRENT
-  brent: {
-    name: "London Borough of Brent",
-    short_name: "Brent",
-    region: "London",
-    councilUrl: "https://www.brent.gov.uk/housing/landlords",
-    mandatoryHMO: true,
-    additionalHMO: { active: false, coverage: "none", designatedWards: [], description: "" },
-    selectiveLicensing: { active: false, coverage: "none", designatedWards: [], description: "" },
-    notes: "No additional or selective licensing schemes currently in force."
-  },
-
-  // NON-LONDON BOROUGHS
+  // NON-LONDON (all the same structure, just mandatoryHMO: true, everything else false/none)
   broxbourne: {
-    name: "Borough of Broxbourne",
-    short_name: "Broxbourne",
-    region: "Non-London",
-    councilUrl: "https://www.broxbourne.gov.uk/housing",
-    mandatoryHMO: true,
-    additionalHMO: { active: false, coverage: "none", designatedWards: [], description: "" },
-    selectiveLicensing: { active: false, coverage: "none", designatedWards: [], description: "" },
-    notes: "Non-London authority. No additional or selective schemes."
+    name: "Borough of Broxbourne", short_name: "Broxbourne", region: "Non-London",
+    councilUrl: "https://www.broxbourne.gov.uk/housing", mandatoryHMO: true,
+    additionalHMO: { active: false, coverage: "none", designatedWards: [], excludedWards: [], description: "" },
+    selectiveLicensing: { active: false, coverage: "none", designatedWards: [], excludedWards: [], description: "" },
+    notes: "Non-London. No additional or selective schemes."
   },
-
   "epping forest": {
-    name: "Epping Forest District",
-    short_name: "Epping Forest",
-    region: "Non-London",
-    councilUrl: "",
-    mandatoryHMO: true,
-    additionalHMO: { active: false, coverage: "none", designatedWards: [], description: "" },
-    selectiveLicensing: { active: false, coverage: "none", designatedWards: [], description: "" },
-    notes: "Non-London authority."
+    name: "Epping Forest District", short_name: "Epping Forest", region: "Non-London",
+    councilUrl: "", mandatoryHMO: true,
+    additionalHMO: { active: false, coverage: "none", designatedWards: [], excludedWards: [], description: "" },
+    selectiveLicensing: { active: false, coverage: "none", designatedWards: [], excludedWards: [], description: "" },
+    notes: "Non-London."
   },
-
   harlow: {
-    name: "Harlow District",
-    short_name: "Harlow",
-    region: "Non-London",
-    councilUrl: "",
-    mandatoryHMO: true,
-    additionalHMO: { active: false, coverage: "none", designatedWards: [], description: "" },
-    selectiveLicensing: { active: false, coverage: "none", designatedWards: [], description: "" },
-    notes: "Non-London authority."
+    name: "Harlow District", short_name: "Harlow", region: "Non-London",
+    councilUrl: "", mandatoryHMO: true,
+    additionalHMO: { active: false, coverage: "none", designatedWards: [], excludedWards: [], description: "" },
+    selectiveLicensing: { active: false, coverage: "none", designatedWards: [], excludedWards: [], description: "" },
+    notes: "Non-London."
   },
-
   "east hertfordshire": {
-    name: "East Hertfordshire District",
-    short_name: "East Hertfordshire",
-    region: "Non-London",
-    councilUrl: "",
-    mandatoryHMO: true,
-    additionalHMO: { active: false, coverage: "none", designatedWards: [], description: "" },
-    selectiveLicensing: { active: false, coverage: "none", designatedWards: [], description: "" },
-    notes: "Non-London authority."
+    name: "East Hertfordshire District", short_name: "East Hertfordshire", region: "Non-London",
+    councilUrl: "", mandatoryHMO: true,
+    additionalHMO: { active: false, coverage: "none", designatedWards: [], excludedWards: [], description: "" },
+    selectiveLicensing: { active: false, coverage: "none", designatedWards: [], excludedWards: [], description: "" },
+    notes: "Non-London."
   },
-
   hertsmere: {
-    name: "Hertsmere Borough",
-    short_name: "Hertsmere",
-    region: "Non-London",
-    councilUrl: "",
-    mandatoryHMO: true,
-    additionalHMO: { active: false, coverage: "none", designatedWards: [], description: "" },
-    selectiveLicensing: { active: false, coverage: "none", designatedWards: [], description: "" },
-    notes: "Non-London authority."
+    name: "Hertsmere Borough", short_name: "Hertsmere", region: "Non-London",
+    councilUrl: "", mandatoryHMO: true,
+    additionalHMO: { active: false, coverage: "none", designatedWards: [], excludedWards: [], description: "" },
+    selectiveLicensing: { active: false, coverage: "none", designatedWards: [], excludedWards: [], description: "" },
+    notes: "Non-London."
   },
-
   luton: {
-    name: "Luton Borough",
-    short_name: "Luton",
-    region: "Non-London",
-    councilUrl: "",
-    mandatoryHMO: true,
-    additionalHMO: { active: false, coverage: "none", designatedWards: [], description: "" },
-    selectiveLicensing: { active: false, coverage: "none", designatedWards: [], description: "" },
-    notes: "Non-London authority."
+    name: "Luton Borough", short_name: "Luton", region: "Non-London",
+    councilUrl: "", mandatoryHMO: true,
+    additionalHMO: { active: false, coverage: "none", designatedWards: [], excludedWards: [], description: "" },
+    selectiveLicensing: { active: false, coverage: "none", designatedWards: [], excludedWards: [], description: "" },
+    notes: "Non-London. May have selective licensing — check with council."
   },
-
   "west suffolk": {
-    name: "West Suffolk District",
-    short_name: "West Suffolk",
-    region: "Non-London",
-    councilUrl: "",
-    mandatoryHMO: true,
-    additionalHMO: { active: false, coverage: "none", designatedWards: [], description: "" },
-    selectiveLicensing: { active: false, coverage: "none", designatedWards: [], description: "" },
-    notes: "Non-London authority."
+    name: "West Suffolk District", short_name: "West Suffolk", region: "Non-London",
+    councilUrl: "", mandatoryHMO: true,
+    additionalHMO: { active: false, coverage: "none", designatedWards: [], excludedWards: [], description: "" },
+    selectiveLicensing: { active: false, coverage: "none", designatedWards: [], excludedWards: [], description: "" },
+    notes: "Non-London."
   },
-
   medway: {
-    name: "Medway Council",
-    short_name: "Medway",
-    region: "Non-London",
-    councilUrl: "",
-    mandatoryHMO: true,
-    additionalHMO: { active: false, coverage: "none", designatedWards: [], description: "" },
-    selectiveLicensing: { active: false, coverage: "none", designatedWards: [], description: "" },
-    notes: "Non-London authority."
+    name: "Medway Council", short_name: "Medway", region: "Non-London",
+    councilUrl: "", mandatoryHMO: true,
+    additionalHMO: { active: false, coverage: "none", designatedWards: [], excludedWards: [], description: "" },
+    selectiveLicensing: { active: false, coverage: "none", designatedWards: [], excludedWards: [], description: "" },
+    notes: "Non-London."
   }
 };
 

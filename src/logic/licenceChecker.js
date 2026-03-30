@@ -1,5 +1,6 @@
 import BOROUGH_DATABASE from '../data/boroughDatabase.js';
-import { isWardInList, normaliseWardName } from './wardMatcher.js';
+import { isWardInList, isWardExcluded, normaliseWardName } from './wardMatcher.js';
+import { checkEnfieldWardBoundary } from './wardMatcher.js';
 
 /**
  * Find a borough in the database by name (case-insensitive, fuzzy match).
@@ -68,6 +69,7 @@ export function checkLicensing(params) {
   const licences = [];
   const advisoryNotes = [];
   const warnings = [];
+  let confidence = 'high';
 
   if (!boroughResult) {
     return {
@@ -80,6 +82,7 @@ export function checkLicensing(params) {
       advisoryNotes: [],
       warnings: [],
       reasoning: [`Borough "${borough}" not found in database.`],
+      confidence: 'low',
     };
   }
 
@@ -106,6 +109,7 @@ export function checkLicensing(params) {
       }],
       warnings: [],
       reasoning: [...reasoning, 'Property flagged as potentially exempt from licensing.'],
+      confidence: 'medium',
     };
   }
 
@@ -153,11 +157,7 @@ export function checkLicensing(params) {
     reasoning.push(`✗ Additional HMO: Does not meet threshold (needs 3+ occupants, 2+ households, shared facilities).`);
   }
 
-  // STEP 3: SELECTIVE LICENSING CHECK (Council-specific)
-  const isSelectiveCandidate = num_households <= 1 || !shares_facilities ||
-    (num_occupants <= 2) ||
-    (!hasMandatory && !licences.some(l => l.type === 'Additional HMO'));
-
+  // STEP 3: SELECTIVE LICENSING CHECK
   if (bd.selectiveLicensing && bd.selectiveLicensing.active) {
     let wardCovered = false;
     let wardStatus = 'unknown';
@@ -166,7 +166,42 @@ export function checkLicensing(params) {
       wardCovered = true;
       wardStatus = 'borough-wide';
       reasoning.push(`${bd.short_name} has BOROUGH-WIDE selective licensing.`);
-    } else if (bd.selectiveLicensing.designatedWards.length > 0) {
+    } else if (bd.selectiveLicensing.coverage === 'near-borough-wide') {
+      // Most wards covered — check if this ward is excluded
+      if (bd.selectiveLicensing.excludedWards && isWardExcluded(ward, bd.selectiveLicensing.excludedWards)) {
+        wardCovered = false;
+        wardStatus = 'excluded';
+        reasoning.push(`✗ Ward "${ward}" is EXCLUDED from ${bd.short_name}'s selective licensing.`);
+      } else {
+        wardCovered = true;
+        wardStatus = 'covered';
+        reasoning.push(`✓ ${bd.short_name} has near-borough-wide selective licensing. Ward "${ward}" is not in the excluded list.`);
+      }
+    } else if (bd.selectiveLicensing.coverage === 'ward-specific') {
+      // Check Enfield boundary mapping
+      if (boroughResult.key === 'enfield' && bd.selectiveLicensing.usesPreMay2022Boundaries) {
+        const enfieldCheck = checkEnfieldWardBoundary(ward);
+        wardCovered = enfieldCheck.inDesignation;
+        confidence = enfieldCheck.confidence;
+        wardStatus = wardCovered ? 'covered' : 'not_covered';
+        if (enfieldCheck.oldWard) {
+          reasoning.push(`Ward "${ward}" maps to pre-2022 ward "${enfieldCheck.oldWard}" — ${wardCovered ? 'IN' : 'NOT in'} designation (confidence: ${confidence}).`);
+        } else {
+          reasoning.push(`Ward "${ward}" boundary check: ${wardCovered ? 'IN' : 'NOT in'} designation (confidence: ${confidence}).`);
+        }
+      } else if (bd.selectiveLicensing.designatedWards.length > 0) {
+        wardCovered = isWardInList(ward, bd.selectiveLicensing.designatedWards);
+        wardStatus = wardCovered ? 'covered' : 'not_covered';
+        reasoning.push(wardCovered
+          ? `✓ Ward "${ward}" IS in ${bd.short_name}'s selective licensing designated wards.`
+          : `✗ Ward "${ward}" is NOT in ${bd.short_name}'s selective licensing designated wards.`);
+      } else {
+        wardCovered = true;
+        wardStatus = 'check_council';
+        confidence = 'low';
+        reasoning.push(`${bd.short_name} has selective licensing but specific wards not listed. Check with council.`);
+      }
+    } else if (bd.selectiveLicensing.designatedWards && bd.selectiveLicensing.designatedWards.length > 0) {
       wardCovered = isWardInList(ward, bd.selectiveLicensing.designatedWards);
       wardStatus = wardCovered ? 'covered' : 'not_covered';
       if (wardCovered) {
@@ -178,6 +213,7 @@ export function checkLicensing(params) {
       // Has selective but no specific wards listed — flag to check council
       wardCovered = true;
       wardStatus = 'check_council';
+      confidence = 'low';
       reasoning.push(`${bd.short_name} has selective licensing in designated areas but specific wards are not listed. Check with the council.`);
     }
 
@@ -204,7 +240,7 @@ export function checkLicensing(params) {
         });
         reasoning.push(`— Selective: Property is in selective area but already requires HMO licence. Dual licensing may apply — check with council.`);
       }
-    } else if (wardStatus === 'not_covered') {
+    } else if (wardStatus === 'not_covered' || wardStatus === 'excluded') {
       advisoryNotes.push({
         type: 'info',
         text: `${ward} ward is NOT in ${bd.short_name}'s selective licensing designated area. No selective licence required for this ward.`
@@ -214,7 +250,30 @@ export function checkLicensing(params) {
     reasoning.push(`✗ Selective: ${bd.short_name} does not have an active Selective licensing scheme.`);
   }
 
-  // STEP 4: WARNINGS
+  // STEP 4: TRANSITIONAL/UPCOMING SCHEMES
+  if (bd.additionalHMO?.upcoming && !bd.additionalHMO.active) {
+    warnings.push(`${bd.short_name}'s Additional HMO scheme starts ${bd.additionalHMO.startDate}. Applications open from ${bd.additionalHMO.applicationsOpen || 'TBC'}.`);
+  }
+  if (bd.selectiveLicensing?.upcoming && !bd.selectiveLicensing.active) {
+    warnings.push(`${bd.short_name}'s Selective licensing scheme starts ${bd.selectiveLicensing.startDate}. Applications open from ${bd.selectiveLicensing.applicationsOpen || 'TBC'}.`);
+  }
+  if (bd.selectiveLicensing?.pending) {
+    warnings.push(`${bd.short_name} has approved selective licensing but it is NOT yet in force. Check with council for latest status.`);
+  }
+  if (bd.selectiveLicensing?.pendingExpansionWards) {
+    advisoryNotes.push({
+      type: 'info',
+      text: `${bd.short_name}'s selective licensing is approved for expansion to include: ${bd.selectiveLicensing.pendingExpansionWards.join(', ')}. Start date not yet confirmed.`
+    });
+  }
+  if (bd.selectiveLicensing?.usesPreMay2022Boundaries || bd.selectiveLicensing?.usesPreMay2022Boundaries) {
+    advisoryNotes.push({
+      type: 'warning',
+      text: `This borough's scheme uses pre-May 2022 ward boundaries. Ward names from postcode lookup may differ. ${bd.postcodeChecker ? 'Verify at: ' + bd.postcodeChecker : 'Check with the council.'}`
+    });
+  }
+
+  // STEP 5: WARNINGS
   // Barking and Dagenham warning
   if (boroughResult.key === 'barking and dagenham') {
     warnings.push("Barking and Dagenham's Additional HMO scheme status is uncertain (was pending early 2025). Please verify current status with the council before confirming requirements.");
@@ -234,7 +293,7 @@ export function checkLicensing(params) {
     });
   }
 
-  // STEP 5: DETERMINE VERDICT
+  // STEP 6: DETERMINE VERDICT
   let verdict, verdictColor, verdictText;
 
   if (licences.length === 0) {
@@ -267,6 +326,7 @@ export function checkLicensing(params) {
     advisoryNotes,
     warnings,
     reasoning,
+    confidence,
   };
 }
 

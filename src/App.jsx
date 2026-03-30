@@ -6,6 +6,7 @@ import PropertyConfig from './components/PropertyConfig.jsx';
 import ResultsPanel from './components/ResultsPanel.jsx';
 import BoroughSummary from './components/BoroughSummary.jsx';
 import RecentChecks from './components/RecentChecks.jsx';
+import BulkUpload from './components/BulkUpload.jsx';
 import BulkCheck from './components/BulkCheck.jsx';
 import { checkLicensing } from './logic/licenceChecker.js';
 import BOROUGH_DATABASE from './data/boroughDatabase.js';
@@ -136,7 +137,8 @@ function App() {
             }
           />
           <Route path="/boroughs" element={<BoroughSummary />} />
-          <Route path="/bulk" element={<BulkCheck />} />
+          <Route path="/bulk" element={<BulkUpload />} />
+          <Route path="/bulk-postcodes" element={<BulkCheck />} />
           <Route path="/history" element={<RecentChecks />} />
         </Routes>
       </main>
