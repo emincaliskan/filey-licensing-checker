@@ -1,3 +1,5 @@
+import ConfidenceBadge from './ConfidenceBadge.jsx';
+
 export default function LicenceCard({ licence }) {
   const statusColors = {
     national: 'bg-red-100 text-red-800',
@@ -26,10 +28,15 @@ export default function LicenceCard({ licence }) {
           <span className="text-gray-500">Description: </span>
           <span>{licence.description}</span>
         </div>
-        {licence.wardStatus && licence.wardStatus !== 'borough-wide' && (
+        {licence.fee && (
           <div>
-            <span className="text-gray-500">Ward Status: </span>
-            <span className="font-medium capitalize">{licence.wardStatus.replace('_', ' ')}</span>
+            <span className="text-gray-500">Fee: </span>
+            <span className="font-medium">£{licence.fee.toLocaleString()}</span>
+          </div>
+        )}
+        {licence.confidence && (
+          <div className="pt-1">
+            <ConfidenceBadge confidence={licence.confidence} size="small" />
           </div>
         )}
       </div>

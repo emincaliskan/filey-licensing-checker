@@ -252,11 +252,14 @@ const BOROUGH_DATABASE = {
       description: "Borough-wide Additional HMO licensing from 1 April 2024. Includes Section 257 HMOs. £54.50 per habitable room."
     },
     selectiveLicensing: {
-      active: false,
-      coverage: "none",
-      designatedWards: [],
+      active: true,
+      startDate: "2021-10-01",
+      endDate: "2026-09-30",
+      coverage: "ward-specific",
+      designatedWards: ["Spitalfields & Banglatown", "Stepney Green", "Weavers", "Whitechapel"],
       excludedWards: [],
-      description: "Previous selective scheme has ended. Replaced by borough-wide Additional HMO."
+      fee: null,
+      description: "Selective licensing in 4 wards until September 2026. Properties in these wards that are HMOs also need Additional HMO licence."
     },
     notes: ""
   },
@@ -281,11 +284,12 @@ const BOROUGH_DATABASE = {
     selectiveLicensing: {
       active: true,
       startDate: "2025-04-06",
-      coverage: "ward-specific",
+      endDate: "2030-04-05",
+      coverage: "borough-wide",
       designatedWards: [],
       excludedWards: [],
       fee: 950,
-      description: "Selective licensing from 6 April 2025. Multi-designation approach — check council website for exact ward coverage."
+      description: "Borough-wide selective licensing from 6 April 2025. Three designation areas covering the entire borough."
     },
     notes: "Both schemes now active. Check council website for selective licensing ward designations."
   },
@@ -333,10 +337,11 @@ const BOROUGH_DATABASE = {
     mandatoryHMO: true,
     additionalHMO: {
       active: true,
+      startDate: "2026-02-02",
       coverage: "borough-wide",
       designatedWards: [],
       excludedWards: [],
-      description: "Borough-wide Additional HMO licensing."
+      description: "Borough-wide Additional HMO licensing from 2 February 2026. Includes Section 257 HMOs."
     },
     selectiveLicensing: {
       active: true,
@@ -373,7 +378,7 @@ const BOROUGH_DATABASE = {
         "Mayfield", "Newbury", "Seven Kings", "South Woodford", "Wanstead Village"
       ],
       excludedWards: [],
-      fee: 860,
+      fee: 890,
       discounts: { accredited_landlord: 35 },
       description: "Selective licensing across 17 wards in 2 designations."
     },

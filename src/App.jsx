@@ -30,6 +30,7 @@ function App() {
     const result = checkLicensing({
       borough: addressData.borough,
       ward: addressData.ward,
+      postcode: addressData.postcode,
       ...config,
       exemptions,
     });

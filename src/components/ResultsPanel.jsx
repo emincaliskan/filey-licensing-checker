@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import StatusBadge from './StatusBadge.jsx';
 import LicenceCard from './LicenceCard.jsx';
+import ConfidenceBadge from './ConfidenceBadge.jsx';
+import VerificationPanel from './VerificationPanel.jsx';
+import UserConfirmation from './UserConfirmation.jsx';
 import ReasoningPanel from './ReasoningPanel.jsx';
 import AdvisoryNotes from './AdvisoryNotes.jsx';
 
@@ -58,10 +61,31 @@ export default function ResultsPanel({ results, addressData, propertyConfig, onR
       {/* Verdict Banner */}
       <StatusBadge verdictColor={results.verdictColor} verdictText={results.verdictText} size="large" />
 
-      <div className="text-center text-sm text-gray-500">
-        {results.borough} &middot; {results.ward} ward
-        {results.region === 'Non-London' && <span className="ml-2 px-2 py-0.5 bg-gray-100 rounded-full text-xs">Non-London</span>}
+      <div className="text-center text-sm text-gray-500 space-y-2">
+        <div>
+          {results.borough}
+          {results.ward && <span> &middot; Ward hint: {results.ward}</span>}
+          {results.region === 'Non-London' && <span className="ml-2 px-2 py-0.5 bg-gray-100 rounded-full text-xs">Non-London</span>}
+        </div>
+        <ConfidenceBadge confidence={results.confidence} />
       </div>
+
+      {/* Verification Panel */}
+      <VerificationPanel verificationsNeeded={results.verificationsNeeded} wardHint={results.ward} />
+
+      {/* User Confirmation */}
+      {results.verificationsNeeded?.length > 0 && addressData?.postcode && (
+        <div className="space-y-3">
+          {results.verificationsNeeded.map((v, i) => (
+            <UserConfirmation
+              key={i}
+              postcode={addressData.postcode}
+              borough={results.borough}
+              verificationType={v.type}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Warnings */}
       {results.warnings && results.warnings.length > 0 && (
