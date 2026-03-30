@@ -1,5 +1,4 @@
 const POSTCODES_IO_BASE = 'https://api.postcodes.io/postcodes';
-const NOMINATIM_BASE = 'https://nominatim.openstreetmap.org';
 
 export async function lookupPostcode(postcode) {
   const cleaned = postcode.replace(/\s+/g, '').toUpperCase();
@@ -18,7 +17,7 @@ export async function lookupPostcode(postcode) {
     throw new Error('Postcode not found. Please check and try again.');
   }
 
-  const { admin_district, admin_ward, postcode: formattedPostcode, latitude, longitude } = data.result;
+  const { admin_district, admin_ward, postcode: formattedPostcode, latitude, longitude, codes } = data.result;
 
   return {
     postcode: formattedPostcode,
@@ -26,6 +25,7 @@ export async function lookupPostcode(postcode) {
     ward: admin_ward,
     latitude,
     longitude,
+    gssWardCode: codes?.admin_ward || null,
   };
 }
 
@@ -115,6 +115,7 @@ export async function lookupMultiplePostcodes(postcodes) {
             ward: item.result.admin_ward,
             latitude: item.result.latitude,
             longitude: item.result.longitude,
+            gssWardCode: item.result.codes?.admin_ward || null,
           });
         } else {
           results.push({

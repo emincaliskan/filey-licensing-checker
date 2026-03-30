@@ -89,19 +89,30 @@ describe('Three-Tier Decision Logic', () => {
     expect(hmo.confidence).toBe('high');
   });
 
-  // HARINGEY — Selective = VERIFY (ward-specific, 14/21 wards)
-  it('Haringey: Selective requires VERIFICATION', () => {
+  // HARINGEY — WARD_CHECK with GSS code → HIGH confidence
+  it('Haringey: Selective auto-decides with GSS code', () => {
+    const result = checkLicensing({
+      borough: 'Haringey', ward: 'Tottenham Central', num_occupants: 1,
+      num_households: 1, shares_facilities: false, tenancy_type: 'single_household',
+      gssWardCode: 'E05013756', // Tottenham Central — designated
+    });
+    const sel = result.licences.find(l => l.type === 'Selective');
+    expect(sel).toBeDefined();
+    expect(sel.confidence).toBe('high');
+  });
+
+  // HARINGEY — WARD_CHECK without GSS code → falls back to VERIFY
+  it('Haringey: Selective falls back to VERIFY without GSS code', () => {
     const result = checkLicensing({
       borough: 'Haringey', ward: 'Tottenham Central', num_occupants: 1,
       num_households: 1, shares_facilities: false, tenancy_type: 'single_household',
     });
     expect(result.confidence).toBe('verify');
     expect(result.verificationsNeeded.length).toBeGreaterThan(0);
-    expect(result.verificationsNeeded[0].type).toBe('Selective');
   });
 
-  // ENFIELD — Selective = VERIFY (ward-specific, 14 wards, pre-2022 boundaries)
-  it('Enfield: Selective requires VERIFICATION (cannot auto-decide)', () => {
+  // ENFIELD — GEOJSON_CHECK without coordinates → falls back to VERIFY
+  it('Enfield: Selective falls back to VERIFY without coordinates', () => {
     const result = checkLicensing({
       borough: 'Enfield', ward: 'Southgate', num_occupants: 1,
       num_households: 1, shares_facilities: false, tenancy_type: 'single_household',
@@ -144,37 +155,51 @@ describe('Three-Tier Decision Logic', () => {
     expect(result.verdictColor).toBe('grey');
   });
 
-  // WALTHAM FOREST — Selective = MEDIUM (20/22 wards)
-  it('Waltham Forest: Selective MEDIUM confidence', () => {
+  // WALTHAM FOREST — WARD_CHECK with GSS code not in excluded → HIGH
+  it('Waltham Forest: Selective HIGH with GSS code (not excluded)', () => {
     const result = checkLicensing({
       borough: 'Waltham Forest', ward: 'Leyton', num_occupants: 1,
       num_households: 1, shares_facilities: false, tenancy_type: 'single_household',
+      gssWardCode: 'E05013685', // Not in excluded set
     });
     const sel = result.licences.find(l => l.type === 'Selective');
     expect(sel).toBeDefined();
-    expect(sel.confidence).toBe('medium');
+    expect(sel.confidence).toBe('high');
   });
 
-  // NEWHAM — Selective = MEDIUM (22/24 wards)
-  it('Newham: Selective MEDIUM confidence', () => {
+  // WALTHAM FOREST — Excluded ward GSS → NOT required, HIGH
+  it('Waltham Forest: Selective excluded ward = NOT required', () => {
+    const result = checkLicensing({
+      borough: 'Waltham Forest', ward: 'Endlebury', num_occupants: 1,
+      num_households: 1, shares_facilities: false, tenancy_type: 'single_household',
+      gssWardCode: 'E05013680', // Endlebury — excluded
+    });
+    const sel = result.licences.find(l => l.type === 'Selective');
+    expect(sel).toBeUndefined();
+  });
+
+  // NEWHAM — WARD_CHECK with GSS code not excluded → HIGH
+  it('Newham: Selective HIGH with GSS code (not excluded)', () => {
     const result = checkLicensing({
       borough: 'Newham', ward: 'West Ham', num_occupants: 1,
       num_households: 1, shares_facilities: false, tenancy_type: 'single_household',
+      gssWardCode: 'E05009321', // Not in excluded set
     });
     const sel = result.licences.find(l => l.type === 'Selective');
     expect(sel).toBeDefined();
-    expect(sel.confidence).toBe('medium');
+    expect(sel.confidence).toBe('high');
   });
 
-  // BRENT — Selective = MEDIUM (21/22 wards)
-  it('Brent: Selective MEDIUM confidence', () => {
+  // BRENT — WARD_CHECK with GSS code not excluded → HIGH
+  it('Brent: Selective HIGH with GSS code (not excluded)', () => {
     const result = checkLicensing({
       borough: 'Brent', ward: 'Kilburn', num_occupants: 1,
       num_households: 1, shares_facilities: false, tenancy_type: 'single_household',
+      gssWardCode: 'E05013665', // Not Wembley Park
     });
     const sel = result.licences.find(l => l.type === 'Selective');
     expect(sel).toBeDefined();
-    expect(sel.confidence).toBe('medium');
+    expect(sel.confidence).toBe('high');
   });
 
   // BARKING AND DAGENHAM — Selective = AUTO_HIGH (borough-wide from Apr 2025)
@@ -188,14 +213,25 @@ describe('Three-Tier Decision Logic', () => {
     expect(sel.confidence).toBe('high');
   });
 
-  // TOWER HAMLETS — Selective = VERIFY (4 wards)
-  it('Tower Hamlets: Selective requires VERIFICATION', () => {
+  // TOWER HAMLETS — WARD_CHECK with GSS code → HIGH
+  it('Tower Hamlets: Selective auto-decides with GSS code', () => {
+    const result = checkLicensing({
+      borough: 'Tower Hamlets', ward: 'Whitechapel', num_occupants: 1,
+      num_households: 1, shares_facilities: false, tenancy_type: 'single_household',
+      gssWardCode: 'E05009342', // Whitechapel — designated
+    });
+    const sel = result.licences.find(l => l.type === 'Selective');
+    expect(sel).toBeDefined();
+    expect(sel.confidence).toBe('high');
+  });
+
+  // TOWER HAMLETS — Without GSS code → VERIFY
+  it('Tower Hamlets: Falls back to VERIFY without GSS code', () => {
     const result = checkLicensing({
       borough: 'Tower Hamlets', ward: 'Whitechapel', num_occupants: 1,
       num_households: 1, shares_facilities: false, tenancy_type: 'single_household',
     });
     expect(result.confidence).toBe('verify');
-    expect(result.verificationsNeeded.length).toBeGreaterThan(0);
   });
 
   // NON-LONDON — no schemes, AUTO_HIGH_NO

@@ -63,7 +63,7 @@ export default function BulkUpload() {
 
       setProgress({ current: 0, total: uniquePostcodes.length, stage: 'Looking up postcodes...' });
 
-      // Bulk lookup in chunks of 100
+      // Bulk lookup in chunks of 100 — includes GSS codes and coordinates
       const postcodeResults = {};
       for (let i = 0; i < uniquePostcodes.length; i += 100) {
         const chunk = uniquePostcodes.slice(i, i + 100);
@@ -101,6 +101,10 @@ export default function BulkUpload() {
         const result = checkLicensing({
           borough,
           ward,
+          postcode: row.postcode,
+          latitude: lookup?.latitude,
+          longitude: lookup?.longitude,
+          gssWardCode: lookup?.gssWardCode,
           num_occupants: row.occupants || 1,
           num_households: row.households || 1,
           shares_facilities: row.shared || false,

@@ -11,6 +11,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@turf/boolean-point-in-polygon": "^7.3.4",
+    "@turf/helpers": "^7.3.4",
     "file-saver": "^2.0.5",
     "jspdf": "^4.2.1",
     "papaparse": "^5.5.3",

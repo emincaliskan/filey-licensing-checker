@@ -31,6 +31,9 @@ function App() {
       borough: addressData.borough,
       ward: addressData.ward,
       postcode: addressData.postcode,
+      latitude: addressData.latitude,
+      longitude: addressData.longitude,
+      gssWardCode: addressData.gssWardCode,
       ...config,
       exemptions,
     });
