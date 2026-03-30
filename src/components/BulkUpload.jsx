@@ -128,10 +128,13 @@ export default function BulkUpload() {
           borough,
           ward,
           status,
-          licenceRequired: result.licences.length > 0 ? 'Yes' : 'No',
-          licenceTypes: result.licences.map(l => l.type).join(', ') || 'None',
+          licenceRequired: result.licences.length > 0 ? 'Yes' : (result.verificationsNeeded?.length > 0 ? 'TBC' : 'No'),
+          licenceTypes: result.licences.map(l => l.type).join(', ') || (result.verificationsNeeded?.length > 0 ? 'Verify' : 'None'),
           verdictText: result.verdictText,
           confidence: result.confidence || 'high',
+          verificationsNeeded: result.verificationsNeeded || [],
+          councilCheckerUrl: result.councilChecker?.url || '',
+          autoDecided: result.confidence === 'high',
           mismatch,
           notes: [row.notes, mismatch, ...(result.warnings || [])].filter(Boolean).join('; '),
         };
@@ -156,6 +159,8 @@ export default function BulkUpload() {
   const filteredResults = results ? (
     filter === 'all' ? results :
     filter === 'issues' ? results.filter(r => r.mismatch || r.status === 'error') :
+    filter === 'verify' ? results.filter(r => r.confidence === 'verify' || r.confidence === 'medium') :
+    filter === 'high' ? results.filter(r => r.confidence === 'high') :
     results.filter(r => r.status === filter)
   ) : [];
 
@@ -163,6 +168,8 @@ export default function BulkUpload() {
     total: results.length,
     required: results.filter(r => r.licenceRequired === 'Yes').length,
     notRequired: results.filter(r => r.licenceRequired === 'No').length,
+    needsVerification: results.filter(r => r.licenceRequired === 'TBC').length,
+    autoConfirmed: results.filter(r => r.autoDecided).length,
     errors: results.filter(r => r.status === 'error').length,
     mismatches: results.filter(r => r.mismatch).length,
   } : null;
@@ -249,28 +256,41 @@ export default function BulkUpload() {
 
       {/* Summary */}
       {summary && (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          <div className="bg-white rounded-lg shadow-sm p-4 text-center">
-            <div className="text-2xl font-bold text-charcoal">{summary.total}</div>
-            <div className="text-xs text-gray-500 uppercase">Total</div>
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+            <div className="bg-white rounded-lg shadow-sm p-4 text-center">
+              <div className="text-2xl font-bold text-charcoal">{summary.total}</div>
+              <div className="text-xs text-gray-500 uppercase">Total</div>
+            </div>
+            <div className="bg-green-50 rounded-lg shadow-sm p-4 text-center">
+              <div className="text-2xl font-bold text-green-600">{summary.autoConfirmed}</div>
+              <div className="text-xs text-gray-500 uppercase">Auto-Confirmed</div>
+            </div>
+            <div className="bg-orange-50 rounded-lg shadow-sm p-4 text-center">
+              <div className="text-2xl font-bold text-orange-600">{summary.needsVerification}</div>
+              <div className="text-xs text-gray-500 uppercase">Needs Verification</div>
+            </div>
+            <div className="bg-red-50 rounded-lg shadow-sm p-4 text-center">
+              <div className="text-2xl font-bold text-red-600">{summary.required}</div>
+              <div className="text-xs text-gray-500 uppercase">Required</div>
+            </div>
+            <div className="bg-gray-50 rounded-lg shadow-sm p-4 text-center">
+              <div className="text-2xl font-bold text-gray-600">{summary.notRequired}</div>
+              <div className="text-xs text-gray-500 uppercase">Not Required</div>
+            </div>
+            <div className="bg-red-50 rounded-lg shadow-sm p-4 text-center">
+              <div className="text-2xl font-bold text-red-400">{summary.errors}</div>
+              <div className="text-xs text-gray-500 uppercase">Errors</div>
+            </div>
+            <div className="bg-amber-50 rounded-lg shadow-sm p-4 text-center">
+              <div className="text-2xl font-bold text-amber-600">{summary.mismatches}</div>
+              <div className="text-xs text-gray-500 uppercase">Mismatches</div>
+            </div>
           </div>
-          <div className="bg-red-50 rounded-lg shadow-sm p-4 text-center">
-            <div className="text-2xl font-bold text-red-600">{summary.required}</div>
-            <div className="text-xs text-gray-500 uppercase">Licence Required</div>
-          </div>
-          <div className="bg-gray-50 rounded-lg shadow-sm p-4 text-center">
-            <div className="text-2xl font-bold text-gray-600">{summary.notRequired}</div>
-            <div className="text-xs text-gray-500 uppercase">Not Required</div>
-          </div>
-          <div className="bg-red-50 rounded-lg shadow-sm p-4 text-center">
-            <div className="text-2xl font-bold text-red-400">{summary.errors}</div>
-            <div className="text-xs text-gray-500 uppercase">Errors</div>
-          </div>
-          <div className="bg-amber-50 rounded-lg shadow-sm p-4 text-center">
-            <div className="text-2xl font-bold text-amber-600">{summary.mismatches}</div>
-            <div className="text-xs text-gray-500 uppercase">Mismatches</div>
-          </div>
-        </div>
+          <p className="text-sm text-gray-600">
+            {summary.autoConfirmed} properties auto-confirmed (HIGH confidence), {summary.needsVerification} require manual verification with council.
+          </p>
+        </>
       )}
 
       {/* Filters */}
@@ -278,6 +298,8 @@ export default function BulkUpload() {
         <div className="flex gap-2 flex-wrap">
           {[
             { key: 'all', label: 'All' },
+            { key: 'high', label: 'Auto-Confirmed' },
+            { key: 'verify', label: 'Needs Verification' },
             { key: 'red', label: 'Required' },
             { key: 'grey', label: 'Not Required' },
             { key: 'error', label: 'Errors' },
@@ -306,22 +328,28 @@ export default function BulkUpload() {
                 <th className="px-3 py-3 font-medium">Address</th>
                 <th className="px-3 py-3 font-medium">Postcode</th>
                 <th className="px-3 py-3 font-medium">Borough</th>
-                <th className="px-3 py-3 font-medium">Ward</th>
+                <th className="px-3 py-3 font-medium">Ward (hint)</th>
                 <th className="px-3 py-3 font-medium">Occ.</th>
                 <th className="px-3 py-3 font-medium">HH</th>
                 <th className="px-3 py-3 font-medium">Required?</th>
                 <th className="px-3 py-3 font-medium">Licence Type</th>
+                <th className="px-3 py-3 font-medium">Confidence</th>
                 <th className="px-3 py-3 font-medium">Notes</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredResults.slice(0, 200).map((r, i) => (
-                <tr key={i} className={`hover:bg-gray-50 ${r.mismatch ? 'bg-amber-50' : ''}`}>
+              {filteredResults.slice(0, 200).map((r, i) => {
+                const rowBg = r.mismatch ? 'bg-amber-50' :
+                  r.confidence === 'verify' ? 'bg-orange-50/50' :
+                  r.confidence === 'medium' ? 'bg-yellow-50/50' :
+                  r.confidence === 'low' ? 'bg-red-50/50' : '';
+                return (
+                <tr key={i} className={`hover:bg-gray-50 ${rowBg}`}>
                   <td className="px-3 py-2 text-gray-400">{i + 1}</td>
                   <td className="px-3 py-2 max-w-xs truncate">{r.address || '—'}</td>
                   <td className="px-3 py-2 font-mono">{r.postcode || '—'}</td>
                   <td className="px-3 py-2">{r.borough || '—'}</td>
-                  <td className="px-3 py-2">{r.ward || '—'}</td>
+                  <td className="px-3 py-2 text-xs">{r.ward || '—'}</td>
                   <td className="px-3 py-2 text-center">{r.occupants || '—'}</td>
                   <td className="px-3 py-2 text-center">{r.households || '—'}</td>
                   <td className="px-3 py-2">
@@ -330,9 +358,22 @@ export default function BulkUpload() {
                     </span>
                   </td>
                   <td className="px-3 py-2">{r.licenceTypes || '—'}</td>
+                  <td className="px-3 py-2">
+                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                      r.confidence === 'high' ? 'bg-green-100 text-green-800' :
+                      r.confidence === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                      r.confidence === 'verify' ? 'bg-orange-100 text-orange-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {r.confidence === 'high' ? 'Confirmed' :
+                       r.confidence === 'medium' ? 'Likely' :
+                       r.confidence === 'verify' ? 'Verify' : 'Low'}
+                    </span>
+                  </td>
                   <td className="px-3 py-2 text-xs text-gray-500 max-w-xs truncate">{r.notes || '—'}</td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
           {filteredResults.length > 200 && (

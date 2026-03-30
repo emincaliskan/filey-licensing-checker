@@ -111,11 +111,13 @@ export function parseFile(file) {
 }
 
 export function exportToCSV(results) {
-  const headers = ['Address', 'Postcode', 'Borough', 'Ward', 'Occupants', 'Households', 'Shared', 'Licence Required', 'Licence Type', 'Confidence', 'Status', 'Notes'];
+  const headers = ['Address', 'Postcode', 'Borough', 'Ward (hint)', 'Occupants', 'Households', 'Shared', 'Licence Required', 'Licence Type', 'Confidence', 'Auto-Decided', 'Requires Action', 'Council Checker URL', 'Status', 'Notes'];
   const rows = results.map(r => [
     r.address || '', r.postcode || '', r.borough || '', r.ward || '',
     r.occupants || '', r.households || '', r.shared ? 'Yes' : 'No',
     r.licenceRequired || '', r.licenceTypes || '', r.confidence || '',
+    r.autoDecided ? 'Yes' : 'No', r.confidence !== 'high' ? 'TRUE' : 'FALSE',
+    r.councilCheckerUrl || '',
     r.status || '', r.notes || ''
   ]);
   const csv = Papa.unparse({ fields: headers, data: rows });
