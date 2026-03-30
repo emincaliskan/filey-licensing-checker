@@ -1,13 +1,25 @@
+import WARD_ALIASES from '../data/wardAliases.js';
+
 /**
- * Normalise a ward name for comparison.
- * Strips common suffixes like "Ward", handles "&" vs "and",
- * lowercases, and removes extra whitespace.
+ * Normalise a ward/borough name for comparison.
+ * Checks aliases first, then normalises.
  */
 export function normaliseWardName(name) {
   if (!name) return '';
-  return name
-    .toLowerCase()
-    .replace(/\bward\b/gi, '')
+
+  const trimmed = name.trim();
+
+  // Check aliases first (exact match)
+  if (WARD_ALIASES[trimmed]) return WARD_ALIASES[trimmed];
+
+  // Case-insensitive alias match
+  const lower = trimmed.toLowerCase();
+  for (const [key, value] of Object.entries(WARD_ALIASES)) {
+    if (key.toLowerCase() === lower) return value;
+  }
+
+  // Standard normalisation
+  return trimmed
     .replace(/&/g, 'and')
     .replace(/['']/g, "'")
     .replace(/\s+/g, ' ')
@@ -21,18 +33,15 @@ export function normaliseWardName(name) {
 export function isWardInList(ward, wardList) {
   if (!ward || !wardList || wardList.length === 0) return false;
 
-  // Handle the special ALL_EXCEPT_EXCLUDED marker
-  if (wardList.includes('ALL_EXCEPT_EXCLUDED')) return true;
-
-  const normWard = normaliseWardName(ward);
+  const normWard = normaliseWardName(ward).toLowerCase();
 
   for (const listWard of wardList) {
-    const normListWard = normaliseWardName(listWard);
+    const normListWard = normaliseWardName(listWard).toLowerCase();
 
     // Exact match after normalisation
     if (normWard === normListWard) return true;
 
-    // One contains the other (handles cases like "Stoke Newington" matching "Stoke Newington Ward")
+    // One contains the other
     if (normWard.includes(normListWard) || normListWard.includes(normWard)) return true;
   }
 
@@ -40,18 +49,9 @@ export function isWardInList(ward, wardList) {
 }
 
 /**
- * Check if a ward is in the excluded list for a borough's selective licensing.
+ * Check if a ward is in the excluded list.
  */
 export function isWardExcluded(ward, excludedWards) {
   if (!ward || !excludedWards || excludedWards.length === 0) return false;
-
-  const normWard = normaliseWardName(ward);
-
-  for (const excluded of excludedWards) {
-    const normExcluded = normaliseWardName(excluded);
-    if (normWard === normExcluded) return true;
-    if (normWard.includes(normExcluded) || normExcluded.includes(normWard)) return true;
-  }
-
-  return false;
+  return isWardInList(ward, excludedWards);
 }

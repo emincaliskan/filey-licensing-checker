@@ -1,54 +1,78 @@
 import { useState } from 'react';
+import StatusBadge from './StatusBadge.jsx';
 import LicenceCard from './LicenceCard.jsx';
-import DiscountCalculator from './DiscountCalculator.jsx';
+import ReasoningPanel from './ReasoningPanel.jsx';
 import AdvisoryNotes from './AdvisoryNotes.jsx';
-import { generatePdfReport, generatePlainTextReport } from './PdfReport.jsx';
-
-const VERDICT_STYLES = {
-  red: 'bg-red-600 text-white',
-  amber: 'bg-amber-500 text-white',
-  green: 'bg-green-600 text-white',
-  blue: 'bg-blue-600 text-white',
-  grey: 'bg-gray-500 text-white',
-};
 
 export default function ResultsPanel({ results, addressData, propertyConfig, onReset }) {
   const [copied, setCopied] = useState(false);
 
-  const handleDownloadPdf = () => {
-    generatePdfReport({ results, addressData, propertyConfig });
-  };
-
   const handleCopyToClipboard = async () => {
-    const text = generatePlainTextReport({ results, addressData, propertyConfig });
+    const lines = [
+      'FILEY PROPERTIES — LICENSING CHECK REPORT',
+      `Date: ${new Date().toLocaleDateString('en-GB')}`,
+      '',
+      `Address: ${addressData.fullAddress || addressData.postcode}`,
+      `Borough: ${results.boroughFullName || results.borough}`,
+      `Ward: ${results.ward}`,
+      `Region: ${results.region || ''}`,
+      `Occupants: ${propertyConfig.num_occupants}`,
+      `Households: ${propertyConfig.num_households}`,
+      `Shared Facilities: ${propertyConfig.shares_facilities ? 'Yes' : 'No'}`,
+      '',
+      `VERDICT: ${results.verdictText}`,
+      '',
+    ];
+
+    if (results.licences.length > 0) {
+      lines.push('LICENCE REQUIREMENTS');
+      for (const licence of results.licences) {
+        lines.push(`  ${licence.type} Licence`);
+        lines.push(`    Status: ${licence.statusLabel}`);
+        lines.push(`    Scope: ${licence.scope}`);
+        lines.push('');
+      }
+    }
+
+    if (results.reasoning) {
+      lines.push('REASONING');
+      for (const step of results.reasoning) {
+        lines.push(`  ${step}`);
+      }
+      lines.push('');
+    }
+
+    lines.push('Disclaimer: This report provides guidance only. Always verify with the relevant council.');
+
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(lines.join('\n'));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback
-      const textarea = document.createElement('textarea');
-      textarea.value = text;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setCopied(false);
     }
   };
 
   return (
     <div className="space-y-6">
       {/* Verdict Banner */}
-      <div
-        className={`rounded-xl p-6 text-center shadow-lg ${VERDICT_STYLES[results.verdictColor] || VERDICT_STYLES.grey}`}
-      >
-        <h2 className="text-2xl font-bold">{results.verdictText}</h2>
-        <p className="mt-1 opacity-90 text-sm">
-          {results.borough} &middot; {results.ward} ward
-        </p>
+      <StatusBadge verdictColor={results.verdictColor} verdictText={results.verdictText} size="large" />
+
+      <div className="text-center text-sm text-gray-500">
+        {results.borough} &middot; {results.ward} ward
+        {results.region === 'Non-London' && <span className="ml-2 px-2 py-0.5 bg-gray-100 rounded-full text-xs">Non-London</span>}
       </div>
+
+      {/* Warnings */}
+      {results.warnings && results.warnings.length > 0 && (
+        <div className="space-y-2">
+          {results.warnings.map((w, i) => (
+            <div key={i} className="p-4 bg-amber-50 border border-amber-300 rounded-lg text-amber-800 text-sm font-medium">
+              ⚠ {w}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Licence Cards */}
       {results.licences.length > 0 && (
@@ -62,29 +86,31 @@ export default function ResultsPanel({ results, addressData, propertyConfig, onR
         </div>
       )}
 
-      {/* Discounts */}
-      <DiscountCalculator licences={results.licences} />
+      {/* Reasoning Panel */}
+      <ReasoningPanel reasoning={results.reasoning} warnings={results.warnings} />
 
       {/* Advisory Notes */}
-      <AdvisoryNotes
-        notes={results.advisoryNotes}
-        upcomingChanges={results.upcomingChanges}
-        penalties={results.penalties}
-      />
+      <AdvisoryNotes notes={results.advisoryNotes} />
+
+      {/* Council Link */}
+      {results.councilUrl && (
+        <a
+          href={results.councilUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block p-4 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm hover:bg-green-100 transition-colors"
+        >
+          Visit {results.borough} council's licensing page for the latest information →
+        </a>
+      )}
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3 no-print">
         <button
-          onClick={handleDownloadPdf}
+          onClick={handleCopyToClipboard}
           className="px-5 py-2.5 bg-charcoal text-white rounded-lg font-medium hover:bg-charcoal/90 transition-colors"
         >
-          Download Report as PDF
-        </button>
-        <button
-          onClick={handleCopyToClipboard}
-          className="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-        >
-          {copied ? 'Copied!' : 'Copy to Clipboard'}
+          {copied ? 'Copied!' : 'Copy Report to Clipboard'}
         </button>
         <button
           onClick={() => window.print()}

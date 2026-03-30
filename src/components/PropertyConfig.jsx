@@ -1,11 +1,17 @@
 import { useState } from 'react';
 
-const PROPERTY_TYPES = [
-  { value: 'house', label: 'House (whole dwelling)' },
-  { value: 'flat_purpose_built', label: 'Flat (in a purpose-built block)' },
-  { value: 'flat_converted', label: 'Flat (in a converted house)' },
-  { value: 'bedsit', label: 'Bedsit / room in shared house' },
-  { value: 'commercial_residential', label: 'Commercial with residential above' },
+const BRANCHES = [
+  { value: 'hackney', label: 'Hackney' },
+  { value: 'lancaster', label: 'Lancaster' },
+  { value: 'enfield', label: 'Enfield' },
+  { value: 'edmonton', label: 'Edmonton' },
+  { value: 'southgate', label: 'Southgate' },
+];
+
+const SERVICE_TYPES = [
+  { value: 'guaranteed_rent', label: 'Guaranteed Rent' },
+  { value: 'management', label: 'Management' },
+  { value: 'other', label: 'Other' },
 ];
 
 const TENANCY_TYPES = [
@@ -18,17 +24,12 @@ const TENANCY_TYPES = [
 
 export default function PropertyConfig({ onSubmit }) {
   const [config, setConfig] = useState({
-    property_type: '',
+    branch: '',
+    service_type: '',
     num_occupants: '',
     num_households: '',
     shares_facilities: '',
     tenancy_type: '',
-    is_section_257: false,
-    is_three_storeys: false,
-    pre_1991_conversion: false,
-    managed_by_agent: false,
-    accredited_landlord: false,
-    epc_abc: false,
   });
 
   const handleChange = (field, value) => {
@@ -46,7 +47,7 @@ export default function PropertyConfig({ onSubmit }) {
   };
 
   const isValid =
-    config.property_type && config.num_occupants && config.num_households && config.tenancy_type;
+    config.num_occupants && config.num_households && config.tenancy_type && config.shares_facilities;
 
   return (
     <div className="bg-white rounded-xl shadow-md p-6">
@@ -56,25 +57,35 @@ export default function PropertyConfig({ onSubmit }) {
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Property Type */}
-        <fieldset>
-          <legend className="text-sm font-medium text-gray-700 mb-2">Property Type</legend>
-          <div className="space-y-2">
-            {PROPERTY_TYPES.map(({ value, label }) => (
-              <label key={value} className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="property_type"
-                  value={value}
-                  checked={config.property_type === value}
-                  onChange={(e) => handleChange('property_type', e.target.value)}
-                  className="text-filey-green focus:ring-filey-blue"
-                />
-                <span className="text-sm">{label}</span>
-              </label>
-            ))}
+        {/* Branch & Service */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Branch (optional)</label>
+            <select
+              value={config.branch}
+              onChange={(e) => handleChange('branch', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-filey-green focus:border-filey-green"
+            >
+              <option value="">Select branch...</option>
+              {BRANCHES.map(({ value, label }) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
           </div>
-        </fieldset>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Service Type (optional)</label>
+            <select
+              value={config.service_type}
+              onChange={(e) => handleChange('service_type', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-filey-green focus:border-filey-green"
+            >
+              <option value="">Select service...</option>
+              {SERVICE_TYPES.map(({ value, label }) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
 
         {/* Occupancy Details */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -114,7 +125,8 @@ export default function PropertyConfig({ onSubmit }) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Share facilities (kitchen/bathroom)?
+              Share facilities?
+              <span className="block text-xs text-gray-400 font-normal">bathroom, kitchen, or toilet shared between tenants from different households</span>
             </label>
             <select
               value={config.shares_facilities}
@@ -140,32 +152,7 @@ export default function PropertyConfig({ onSubmit }) {
                   value={value}
                   checked={config.tenancy_type === value}
                   onChange={(e) => handleChange('tenancy_type', e.target.value)}
-                  className="text-filey-green focus:ring-filey-blue"
-                />
-                <span className="text-sm">{label}</span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
-
-        {/* Additional Flags */}
-        <fieldset>
-          <legend className="text-sm font-medium text-gray-700 mb-2">Additional Flags</legend>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {[
-              { field: 'is_section_257', label: 'Property has been converted into self-contained flats (Section 257 HMO)' },
-              { field: 'is_three_storeys', label: 'Property is 3+ storeys' },
-              { field: 'pre_1991_conversion', label: 'Converted before 1991, does not meet Building Regulations' },
-              { field: 'managed_by_agent', label: 'Managed by a letting agent (not self-managed by landlord)' },
-              { field: 'accredited_landlord', label: 'Landlord is a member of an accreditation scheme (NRLA, LLAS, etc.)' },
-              { field: 'epc_abc', label: 'Property has EPC rating of A, B, or C' },
-            ].map(({ field, label }) => (
-              <label key={field} className="flex items-start gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={config[field]}
-                  onChange={(e) => handleChange(field, e.target.checked)}
-                  className="mt-0.5 text-filey-green focus:ring-filey-blue rounded"
+                  className="text-filey-green focus:ring-filey-green"
                 />
                 <span className="text-sm">{label}</span>
               </label>

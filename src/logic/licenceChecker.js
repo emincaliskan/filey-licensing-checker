@@ -1,25 +1,28 @@
-import boroughsData from '../data/boroughs.json';
-import { isWardInList, isWardExcluded } from './wardMatcher.js';
-import { calculateFee } from './feeCalculator.js';
+import BOROUGH_DATABASE from '../data/boroughDatabase.js';
+import { isWardInList, normaliseWardName } from './wardMatcher.js';
 
 /**
- * Find a borough in the data by name (case-insensitive, partial match).
+ * Find a borough in the database by name (case-insensitive, fuzzy match).
  */
 export function findBorough(boroughName) {
   if (!boroughName) return null;
-  const normalised = boroughName.toLowerCase();
+  const normalised = boroughName.toLowerCase().trim();
 
   // Direct key match
-  if (boroughsData[normalised]) return { key: normalised, data: boroughsData[normalised] };
+  if (BOROUGH_DATABASE[normalised]) {
+    return { key: normalised, data: BOROUGH_DATABASE[normalised] };
+  }
 
   // Match by short_name or full name
-  for (const [key, data] of Object.entries(boroughsData)) {
+  for (const [key, data] of Object.entries(BOROUGH_DATABASE)) {
     if (key === 'metadata') continue;
+    const shortLower = (data.short_name || '').toLowerCase();
+    const nameLower = (data.name || '').toLowerCase();
     if (
-      data.short_name?.toLowerCase() === normalised ||
-      data.name?.toLowerCase() === normalised ||
-      data.name?.toLowerCase().includes(normalised) ||
-      normalised.includes(data.short_name?.toLowerCase())
+      shortLower === normalised ||
+      nameLower === normalised ||
+      nameLower.includes(normalised) ||
+      normalised.includes(shortLower)
     ) {
       return { key, data };
     }
@@ -32,29 +35,23 @@ export function findBorough(boroughName) {
  * Get list of supported borough names.
  */
 export function getSupportedBoroughs() {
-  return Object.entries(boroughsData)
+  return Object.entries(BOROUGH_DATABASE)
     .filter(([key]) => key !== 'metadata')
-    .map(([, data]) => data.short_name || data.name);
+    .map(([, data]) => data.short_name);
 }
 
 /**
- * Main licence checking function.
+ * Main licence checking function — 5-step cascading decision logic.
  *
  * @param {object} params
- * @param {string} params.borough - Borough name
- * @param {string} params.ward - Ward name
- * @param {number} params.num_occupants - Number of occupants
- * @param {number} params.num_households - Number of households
- * @param {boolean} params.shares_facilities - Whether occupants share facilities
- * @param {string} params.property_type - Property type
- * @param {string} params.tenancy_type - Tenancy type
- * @param {boolean} params.is_section_257 - Section 257 HMO flag
- * @param {boolean} params.is_three_storeys - 3+ storeys flag
- * @param {boolean} params.pre_1991_conversion - Pre-1991 conversion flag
- * @param {boolean} params.managed_by_agent - Managed by letting agent flag
- * @param {boolean} params.accredited_landlord - Accredited landlord flag
- * @param {boolean} params.epc_abc - EPC A/B/C flag
- * @returns {object} Licensing check results
+ * @param {string} params.borough
+ * @param {string} params.ward
+ * @param {number} params.num_occupants
+ * @param {number} params.num_households
+ * @param {boolean} params.shares_facilities
+ * @param {string} params.tenancy_type
+ * @param {string[]} params.exemptions - array of exemption IDs
+ * @returns {object}
  */
 export function checkLicensing(params) {
   const {
@@ -63,217 +60,214 @@ export function checkLicensing(params) {
     num_occupants,
     num_households,
     shares_facilities,
-    tenancy_type,
-    is_section_257,
-    accredited_landlord,
-    epc_abc,
+    exemptions = [],
   } = params;
 
   const boroughResult = findBorough(borough);
+  const reasoning = [];
+  const licences = [];
+  const advisoryNotes = [];
+  const warnings = [];
+
   if (!boroughResult) {
     return {
       verdict: 'unsupported',
       verdictColor: 'grey',
-      verdictText: 'BOROUGH NOT SUPPORTED',
-      message: `"${borough}" is not yet covered by this tool.`,
+      verdictText: 'BOROUGH NOT IN DATABASE',
+      message: `"${borough}" is not currently in the licensing database. Check with the local council directly.`,
       supportedBoroughs: getSupportedBoroughs(),
       licences: [],
       advisoryNotes: [],
-      upcomingChanges: [],
+      warnings: [],
+      reasoning: [`Borough "${borough}" not found in database.`],
     };
   }
 
-  const boroughData = boroughResult.data;
-  const licences = [];
-  const advisoryNotes = [];
-  const flags = { accredited_landlord, epc_abc };
+  const bd = boroughResult.data;
+  reasoning.push(`Property is in ${bd.short_name} (${bd.region}).`);
+  reasoning.push(`Ward: ${ward || 'Unknown'}.`);
+  reasoning.push(`Occupants: ${num_occupants}, Households: ${num_households}, Shared facilities: ${shares_facilities ? 'Yes' : 'No'}.`);
 
-  // STEP 1: Check Mandatory HMO
-  if (num_occupants >= 5 && num_households >= 2) {
-    const mandatory = boroughData.mandatory_hmo;
-    if (mandatory && mandatory.active) {
-      const feeResult = calculateFee(mandatory.fee, mandatory.discounts, flags);
-      licences.push({
-        type: 'Mandatory HMO',
-        status: 'active',
-        statusLabel: 'Active — Ongoing',
-        scope: mandatory.scope,
-        description: mandatory.description,
-        start_date: mandatory.start_date,
-        end_date: mandatory.end_date,
-        fee: feeResult,
-        application_url: mandatory.application_url,
-        conditions_summary: mandatory.conditions_summary,
-        fee_notes: mandatory.fee_notes,
-      });
-    }
+  // STEP 0: EXEMPTION CHECK
+  if (exemptions.length > 0) {
+    return {
+      verdict: 'exempt',
+      verdictColor: 'exempt',
+      verdictText: 'PROPERTY MAY BE EXEMPT',
+      borough: bd.short_name,
+      boroughFullName: bd.name,
+      region: bd.region,
+      ward,
+      councilUrl: bd.councilUrl,
+      licences: [],
+      advisoryNotes: [{
+        type: 'exemption',
+        text: `This property may be exempt from licensing. Exemption reasons: ${exemptions.join(', ')}. Verify with the council.`
+      }],
+      warnings: [],
+      reasoning: [...reasoning, 'Property flagged as potentially exempt from licensing.'],
+    };
   }
 
-  // STEP 2: Check Additional HMO
-  if (num_occupants >= 3 && num_households >= 2 && shares_facilities) {
-    // Additional licensing typically covers those NOT in mandatory scope (3-4 occupants)
-    // But we flag it for 5+ too if the borough data indicates
-    const additional = boroughData.additional_hmo;
-    if (additional && additional.active) {
-      // Check Section 257 exemption
-      if (is_section_257 && additional.section_257_exempt) {
-        advisoryNotes.push({
-          type: 'exemption',
-          text: `Section 257 HMOs are EXEMPT from additional licensing in ${boroughData.short_name}. However, other licence types may still apply.`,
-        });
-      } else {
-        const statusLabel = additional.status === 'coming_into_force'
-          ? `Coming into force ${formatDate(additional.start_date)}`
-          : `Active (${formatDate(additional.start_date)} – ${formatDate(additional.end_date)})`;
+  // STEP 1: MANDATORY HMO CHECK (National — applies EVERYWHERE)
+  if (num_occupants >= 5 && num_households >= 2 && shares_facilities) {
+    licences.push({
+      type: 'Mandatory HMO',
+      status: 'national',
+      statusLabel: 'National Legislation — Applies Everywhere',
+      description: 'Properties occupied by 5+ persons forming 2+ households who share facilities require a Mandatory HMO licence under national legislation.',
+      scope: 'National (all of England)',
+    });
+    reasoning.push(`✓ MANDATORY HMO: ${num_occupants} occupants ≥ 5, ${num_households} households ≥ 2, facilities shared → Mandatory HMO licence required (national law).`);
+  } else {
+    reasoning.push(`✗ Mandatory HMO: Does not meet threshold (needs 5+ occupants, 2+ households, shared facilities).`);
+  }
 
-        const feeResult = calculateFee(additional.fee, additional.discounts, flags);
+  // STEP 2: ADDITIONAL HMO CHECK (Council-specific)
+  const isAdditionalHMOCandidate = num_occupants >= 3 && num_households >= 2 && shares_facilities;
+  const hasMandatory = licences.some(l => l.type === 'Mandatory HMO');
+
+  if (isAdditionalHMOCandidate && !hasMandatory) {
+    if (bd.additionalHMO && bd.additionalHMO.active) {
+      const covered = bd.additionalHMO.coverage === 'borough-wide' ||
+        (bd.additionalHMO.designatedWards.length > 0 && isWardInList(ward, bd.additionalHMO.designatedWards));
+
+      if (covered) {
         licences.push({
           type: 'Additional HMO',
-          status: additional.status,
-          statusLabel,
-          scope: additional.scope,
-          description: additional.description,
-          start_date: additional.start_date,
-          end_date: additional.end_date,
-          applications_open: additional.applications_open,
-          fee: feeResult,
-          application_url: additional.application_url,
-          conditions_summary: additional.conditions_summary,
-          fee_notes: additional.fee_notes,
+          status: 'council_scheme',
+          statusLabel: `${bd.short_name} Council Scheme`,
+          description: bd.additionalHMO.description,
+          scope: bd.additionalHMO.coverage === 'borough-wide' ? 'Borough-wide' : 'Designated wards',
         });
+        reasoning.push(`✓ ADDITIONAL HMO: ${num_occupants} occupants ≥ 3, ${num_households} households ≥ 2, facilities shared. ${bd.short_name} has an active Additional HMO scheme (${bd.additionalHMO.coverage}).`);
+      } else {
+        reasoning.push(`✗ Additional HMO: ${bd.short_name} has a scheme but this ward is not in the designated area.`);
       }
+    } else {
+      reasoning.push(`✗ Additional HMO: ${bd.short_name} does not have an active Additional HMO scheme.`);
     }
+  } else if (hasMandatory) {
+    reasoning.push(`— Additional HMO: Not applicable (property already requires Mandatory HMO licence).`);
+  } else {
+    reasoning.push(`✗ Additional HMO: Does not meet threshold (needs 3+ occupants, 2+ households, shared facilities).`);
   }
 
-  // STEP 3: Check Selective Licensing
-  const isSelectiveCandidate =
-    num_occupants <= 2 ||
-    tenancy_type === 'single_household' ||
-    tenancy_type === 'professional_sharers';
+  // STEP 3: SELECTIVE LICENSING CHECK (Council-specific)
+  const isSelectiveCandidate = num_households <= 1 || !shares_facilities ||
+    (num_occupants <= 2) ||
+    (!hasMandatory && !licences.some(l => l.type === 'Additional HMO'));
 
-  if (isSelectiveCandidate) {
-    const selective = boroughData.selective;
-    if (selective && selective.active) {
-      // Check if ward is covered
-      let wardCovered = false;
-      let wardStatus = 'unknown';
+  if (bd.selectiveLicensing && bd.selectiveLicensing.active) {
+    let wardCovered = false;
+    let wardStatus = 'unknown';
 
-      if (selective.covered_wards && selective.covered_wards.includes('ALL_EXCEPT_EXCLUDED')) {
-        // Borough covers all wards except excluded ones
-        if (selective.excluded_wards && isWardExcluded(ward, selective.excluded_wards)) {
-          wardCovered = false;
-          wardStatus = 'excluded';
-        } else {
-          wardCovered = true;
-          wardStatus = 'covered';
-        }
-      } else if (selective.covered_wards && selective.covered_wards.length > 0) {
-        wardCovered = isWardInList(ward, selective.covered_wards);
-        wardStatus = wardCovered ? 'covered' : 'not_covered';
-      }
-
+    if (bd.selectiveLicensing.coverage === 'borough-wide') {
+      wardCovered = true;
+      wardStatus = 'borough-wide';
+      reasoning.push(`${bd.short_name} has BOROUGH-WIDE selective licensing.`);
+    } else if (bd.selectiveLicensing.designatedWards.length > 0) {
+      wardCovered = isWardInList(ward, bd.selectiveLicensing.designatedWards);
+      wardStatus = wardCovered ? 'covered' : 'not_covered';
       if (wardCovered) {
-        const statusLabel = selective.status === 'coming_into_force'
-          ? `Coming into force ${formatDate(selective.start_date)}`
-          : selective.start_date
-            ? `Active (${formatDate(selective.start_date)} – ${formatDate(selective.end_date)})`
-            : 'Start date TBC';
+        reasoning.push(`✓ Ward "${ward}" IS in ${bd.short_name}'s selective licensing designated wards.`);
+      } else {
+        reasoning.push(`✗ Ward "${ward}" is NOT in ${bd.short_name}'s selective licensing designated wards: ${bd.selectiveLicensing.designatedWards.join(', ')}.`);
+      }
+    } else {
+      // Has selective but no specific wards listed — flag to check council
+      wardCovered = true;
+      wardStatus = 'check_council';
+      reasoning.push(`${bd.short_name} has selective licensing in designated areas but specific wards are not listed. Check with the council.`);
+    }
 
-        const feeResult = calculateFee(selective.fee, selective.discounts, flags);
+    if (wardCovered) {
+      // For single lets / non-HMO properties, selective applies
+      // For HMO properties, they may need BOTH additional HMO AND selective
+      const alreadyHasHMO = licences.some(l => l.type === 'Mandatory HMO' || l.type === 'Additional HMO');
+
+      if (!alreadyHasHMO) {
         licences.push({
           type: 'Selective',
-          status: selective.status,
-          statusLabel,
-          scope: selective.scope,
-          description: selective.description,
-          start_date: selective.start_date,
-          end_date: selective.end_date,
-          applications_open: selective.applications_open,
-          fee: feeResult,
-          application_url: selective.application_url,
-          conditions_summary: selective.conditions_summary,
-          fee_notes: selective.fee_notes,
+          status: 'council_scheme',
+          statusLabel: `${bd.short_name} Council Scheme`,
+          description: bd.selectiveLicensing.description,
+          scope: wardStatus === 'borough-wide' ? 'Borough-wide' : 'Designated wards',
           wardStatus,
         });
-      } else if (wardStatus === 'not_covered') {
+        reasoning.push(`✓ SELECTIVE: Property does not meet HMO criteria and is in a selective licensing area → Selective licence required.`);
+      } else {
+        // Property already has HMO licence — check if dual licensing applies
         advisoryNotes.push({
           type: 'info',
-          text: `${ward} ward is NOT in ${boroughData.short_name}'s selective licensing area. No selective licence currently required for this ward.`,
+          text: `This property is in a selective licensing area. As it already requires an HMO licence, the selective licence may not apply separately. Check with ${bd.short_name} council.`
         });
-      } else if (wardStatus === 'excluded') {
-        advisoryNotes.push({
-          type: 'info',
-          text: `${ward} ward is specifically excluded from ${boroughData.short_name}'s selective licensing scheme.`,
-        });
+        reasoning.push(`— Selective: Property is in selective area but already requires HMO licence. Dual licensing may apply — check with council.`);
       }
-    } else if (selective && !selective.active) {
+    } else if (wardStatus === 'not_covered') {
       advisoryNotes.push({
         type: 'info',
-        text: `No selective licensing scheme is currently in force in ${boroughData.short_name}. ${selective.description || ''}`,
+        text: `${ward} ward is NOT in ${bd.short_name}'s selective licensing designated area. No selective licence required for this ward.`
       });
     }
+  } else {
+    reasoning.push(`✗ Selective: ${bd.short_name} does not have an active Selective licensing scheme.`);
   }
 
-  // STEP 5: Upcoming changes
-  const upcomingChanges = boroughData.upcoming_changes || [];
+  // STEP 4: WARNINGS
+  // Barking and Dagenham warning
+  if (boroughResult.key === 'barking and dagenham') {
+    warnings.push("Barking and Dagenham's Additional HMO scheme status is uncertain (was pending early 2025). Please verify current status with the council before confirming requirements.");
+  }
 
-  // STEP 6: Special case advisory notes
-  advisoryNotes.push({
-    type: 'warning',
-    text: `Maximum penalties for non-compliance in ${boroughData.short_name}: ${boroughData.penalties?.description || 'Contact council for details.'}`,
-  });
+  // Borough notes
+  if (bd.notes) {
+    advisoryNotes.push({ type: 'info', text: bd.notes });
+  }
 
-  if (params.tenancy_type === 'company_let') {
+  // Council URL
+  if (bd.councilUrl) {
     advisoryNotes.push({
-      type: 'info',
-      text: 'Company lets may have different licensing requirements. Check with the council directly.',
+      type: 'link',
+      text: `Check ${bd.short_name} council's licensing page for the latest information.`,
+      url: bd.councilUrl,
     });
   }
 
-  // Determine verdict
+  // STEP 5: DETERMINE VERDICT
   let verdict, verdictColor, verdictText;
 
   if (licences.length === 0) {
-    verdict = 'green';
-    verdictColor = 'green';
+    verdict = 'not_required';
+    verdictColor = 'grey';
     verdictText = 'NO LICENCE CURRENTLY REQUIRED';
+    reasoning.push('→ RESULT: No licensing requirement identified for this property configuration.');
   } else if (licences.length === 1) {
-    verdict = 'red';
+    verdict = 'required';
     verdictColor = 'red';
     verdictText = `LICENCE REQUIRED — ${licences[0].type}`;
+    reasoning.push(`→ RESULT: ${licences[0].type} licence required.`);
   } else {
-    verdict = 'blue';
-    verdictColor = 'blue';
-    verdictText = 'MULTIPLE LICENCES MAY APPLY';
-  }
-
-  // Check for "coming into force" — show amber if all licences are future
-  const allFuture = licences.length > 0 && licences.every((l) => l.status === 'coming_into_force');
-  if (allFuture) {
-    verdict = 'amber';
-    verdictColor = 'amber';
-    verdictText = `LICENCE REQUIRED FROM ${formatDate(licences[0].start_date)} — ${licences.map((l) => l.type).join(' + ')}`;
+    verdict = 'multiple';
+    verdictColor = 'red';
+    verdictText = `MULTIPLE LICENCES MAY APPLY — ${licences.map(l => l.type).join(' + ')}`;
+    reasoning.push(`→ RESULT: Multiple licences may apply: ${licences.map(l => l.type).join(', ')}.`);
   }
 
   return {
     verdict,
     verdictColor,
     verdictText,
-    borough: boroughData.short_name,
-    boroughFullName: boroughData.name,
+    borough: bd.short_name,
+    boroughFullName: bd.name,
+    region: bd.region,
     ward,
-    council_url: boroughData.council_url,
+    councilUrl: bd.councilUrl,
     licences,
     advisoryNotes,
-    upcomingChanges,
-    penalties: boroughData.penalties,
+    warnings,
+    reasoning,
   };
 }
 
-function formatDate(dateStr) {
-  if (!dateStr) return 'TBC';
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-}
-
-export { boroughsData };
+export { BOROUGH_DATABASE };

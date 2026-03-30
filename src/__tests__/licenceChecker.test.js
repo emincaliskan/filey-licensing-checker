@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { checkLicensing, findBorough, getSupportedBoroughs } from '../logic/licenceChecker.js';
 import { normaliseWardName, isWardInList } from '../logic/wardMatcher.js';
-import { calculateFee } from '../logic/feeCalculator.js';
 
 describe('findBorough', () => {
   it('finds Hackney by name', () => {
@@ -22,27 +21,53 @@ describe('findBorough', () => {
     expect(result.data.short_name).toBe('Waltham Forest');
   });
 
+  it('finds Tower Hamlets', () => {
+    const result = findBorough('Tower Hamlets');
+    expect(result).not.toBeNull();
+    expect(result.data.short_name).toBe('Tower Hamlets');
+  });
+
+  it('finds Barking and Dagenham', () => {
+    const result = findBorough('Barking and Dagenham');
+    expect(result).not.toBeNull();
+    expect(result.data.short_name).toBe('Barking and Dagenham');
+  });
+
+  it('finds non-London boroughs', () => {
+    expect(findBorough('Broxbourne')).not.toBeNull();
+    expect(findBorough('Harlow')).not.toBeNull();
+    expect(findBorough('Medway')).not.toBeNull();
+  });
+
   it('returns null for unsupported borough', () => {
     expect(findBorough('Westminster')).toBeNull();
   });
 });
 
 describe('getSupportedBoroughs', () => {
-  it('returns all supported boroughs', () => {
+  it('returns all 22 supported boroughs', () => {
     const boroughs = getSupportedBoroughs();
+    expect(boroughs.length).toBe(22);
     expect(boroughs).toContain('Hackney');
     expect(boroughs).toContain('Haringey');
     expect(boroughs).toContain('Enfield');
     expect(boroughs).toContain('Waltham Forest');
     expect(boroughs).toContain('Islington');
     expect(boroughs).toContain('Barnet');
+    expect(boroughs).toContain('Newham');
+    expect(boroughs).toContain('Tower Hamlets');
+    expect(boroughs).toContain('Broxbourne');
+    expect(boroughs).toContain('Medway');
   });
 });
 
 describe('wardMatcher', () => {
-  it('normalises ward names', () => {
-    expect(normaliseWardName('Stoke Newington Ward')).toBe('stoke newington');
-    expect(normaliseWardName('Hoxton East & Shoreditch')).toBe('hoxton east and shoreditch');
+  it('normalises ward names via aliases', () => {
+    expect(normaliseWardName('Bruce castle')).toBe('Bruce Castle');
+    expect(normaliseWardName('Noel Paek')).toBe('Noel Park');
+    expect(normaliseWardName('St Anns')).toBe("St Ann's");
+    expect(normaliseWardName('De Beouvour')).toBe('De Beauvoir');
+    expect(normaliseWardName('Hoggerston')).toBe('Haggerston');
   });
 
   it('matches wards in list', () => {
@@ -51,52 +76,20 @@ describe('wardMatcher', () => {
     expect(isWardInList('Unknown Ward', ['Stoke Newington'])).toBe(false);
   });
 
-  it('handles ALL_EXCEPT_EXCLUDED marker', () => {
-    expect(isWardInList('Any Ward', ['ALL_EXCEPT_EXCLUDED'])).toBe(true);
-  });
-});
-
-describe('feeCalculator', () => {
-  it('returns fee with no discounts', () => {
-    const result = calculateFee(1400, {}, {});
-    expect(result.baseFee).toBe(1400);
-    expect(result.finalFee).toBe(1400);
-    expect(result.appliedDiscounts).toHaveLength(0);
+  it('matches wards case-insensitively', () => {
+    expect(isWardInList('bruce castle', ['Bruce Castle'])).toBe(true);
+    expect(isWardInList('TOTTENHAM HALE', ['Tottenham Hale'])).toBe(true);
   });
 
-  it('applies accredited landlord discount', () => {
-    const result = calculateFee(1400, { accredited_landlord: 100 }, { accredited_landlord: true });
-    expect(result.finalFee).toBe(1300);
-    expect(result.appliedDiscounts).toHaveLength(1);
-    expect(result.appliedDiscounts[0].reason).toBe('Accredited landlord');
-  });
-
-  it('applies EPC ABC discount', () => {
-    const result = calculateFee(1360, { epc_abc: 50 }, { epc_abc: true });
-    expect(result.finalFee).toBe(1310);
-  });
-
-  it('applies multiple discounts', () => {
-    const result = calculateFee(
-      1400,
-      { accredited_landlord: 100, epc_b: 100 },
-      { accredited_landlord: true, epc_abc: true }
-    );
-    expect(result.finalFee).toBe(1200);
-    expect(result.appliedDiscounts).toHaveLength(2);
-  });
-
-  it('handles null fee', () => {
-    const result = calculateFee(null, {}, {});
-    expect(result.baseFee).toBeNull();
-    expect(result.finalFee).toBeNull();
-    expect(result.feeNote).toBe('Contact council for current fee');
+  it('matches wards via aliases', () => {
+    expect(isWardInList('Noel Paek', ['Noel Park'])).toBe(true);
+    expect(isWardInList('Seven sisters', ['Seven Sisters'])).toBe(true);
   });
 });
 
 describe('Licensing Decision Logic', () => {
-  // Test 1: N16 8JN — Hackney, Stoke Newington, 1 occupant, 1 household
-  it('Test 1: Hackney selective licence for single occupant in covered ward', () => {
+  // Test 1: Hackney selective — Stoke Newington is a designated ward
+  it('Hackney selective licence for single occupant in Stoke Newington', () => {
     const result = checkLicensing({
       borough: 'Hackney',
       ward: 'Stoke Newington',
@@ -104,17 +97,14 @@ describe('Licensing Decision Logic', () => {
       num_households: 1,
       shares_facilities: false,
       tenancy_type: 'single_household',
-      is_section_257: false,
-      accredited_landlord: false,
-      epc_abc: false,
     });
     expect(result.licences).toHaveLength(1);
     expect(result.licences[0].type).toBe('Selective');
-    expect(result.licences[0].status).toBe('coming_into_force');
+    expect(result.licences[0].status).toBe('council_scheme');
   });
 
-  // Test 2: N16 8JN — Hackney, Stoke Newington, 5 occupants, 3 households
-  it('Test 2: Hackney mandatory HMO for 5+ occupants', () => {
+  // Test 2: Hackney mandatory HMO — 5+ occupants, 2+ households, shared
+  it('Hackney mandatory HMO for 5+ occupants', () => {
     const result = checkLicensing({
       borough: 'Hackney',
       ward: 'Stoke Newington',
@@ -122,16 +112,13 @@ describe('Licensing Decision Logic', () => {
       num_households: 3,
       shares_facilities: true,
       tenancy_type: 'hmo',
-      is_section_257: false,
-      accredited_landlord: false,
-      epc_abc: false,
     });
     const types = result.licences.map((l) => l.type);
     expect(types).toContain('Mandatory HMO');
   });
 
-  // Test 3: N16 8JN — Hackney, 3 occupants, 2 households, shared facilities
-  it('Test 3: Hackney additional HMO for 3-4 occupants sharing', () => {
+  // Test 3: Hackney additional HMO — 3 occupants, 2 households, shared
+  it('Hackney additional HMO for 3-4 occupants sharing', () => {
     const result = checkLicensing({
       borough: 'Hackney',
       ward: 'Stoke Newington',
@@ -139,16 +126,13 @@ describe('Licensing Decision Logic', () => {
       num_households: 2,
       shares_facilities: true,
       tenancy_type: 'hmo',
-      is_section_257: false,
-      accredited_landlord: false,
-      epc_abc: false,
     });
     const types = result.licences.map((l) => l.type);
     expect(types).toContain('Additional HMO');
   });
 
-  // Test 4: Haringey, 4 occupants, 2 households, shared
-  it('Test 4: Haringey additional HMO for 4 occupants', () => {
+  // Test 4: Haringey additional HMO
+  it('Haringey additional HMO for 4 occupants', () => {
     const result = checkLicensing({
       borough: 'Haringey',
       ward: 'Tottenham Central',
@@ -156,16 +140,13 @@ describe('Licensing Decision Logic', () => {
       num_households: 2,
       shares_facilities: true,
       tenancy_type: 'hmo',
-      is_section_257: false,
-      accredited_landlord: false,
-      epc_abc: false,
     });
     const types = result.licences.map((l) => l.type);
     expect(types).toContain('Additional HMO');
   });
 
-  // Test 5: Haringey, 1 occupant — selective check
-  it('Test 5: Haringey selective check for covered ward', () => {
+  // Test 5: Haringey selective — Tottenham Central is designated
+  it('Haringey selective in designated ward', () => {
     const result = checkLicensing({
       borough: 'Haringey',
       ward: 'Tottenham Central',
@@ -173,33 +154,27 @@ describe('Licensing Decision Logic', () => {
       num_households: 1,
       shares_facilities: false,
       tenancy_type: 'single_household',
-      is_section_257: false,
-      accredited_landlord: false,
-      epc_abc: false,
     });
     const types = result.licences.map((l) => l.type);
     expect(types).toContain('Selective');
   });
 
-  // Test 6: Enfield, 2 occupants, 1 household — selective check
-  it('Test 6: Enfield selective check for covered ward', () => {
+  // Test 6: Enfield — borough-wide selective
+  it('Enfield selective licence (borough-wide)', () => {
     const result = checkLicensing({
       borough: 'Enfield',
-      ward: 'Chase',
+      ward: 'Any Ward',
       num_occupants: 2,
       num_households: 1,
       shares_facilities: false,
       tenancy_type: 'single_household',
-      is_section_257: false,
-      accredited_landlord: false,
-      epc_abc: false,
     });
     const types = result.licences.map((l) => l.type);
     expect(types).toContain('Selective');
   });
 
-  // Test 7: Enfield, 6 occupants, 3 households — mandatory HMO
-  it('Test 7: Enfield mandatory HMO for 6 occupants', () => {
+  // Test 7: Enfield mandatory HMO
+  it('Enfield mandatory HMO for 6 occupants', () => {
     const result = checkLicensing({
       borough: 'Enfield',
       ward: 'Chase',
@@ -207,16 +182,13 @@ describe('Licensing Decision Logic', () => {
       num_households: 3,
       shares_facilities: true,
       tenancy_type: 'hmo',
-      is_section_257: false,
-      accredited_landlord: false,
-      epc_abc: false,
     });
     const types = result.licences.map((l) => l.type);
     expect(types).toContain('Mandatory HMO');
   });
 
-  // Test 8: Islington, 3 occupants, 2 households — additional HMO
-  it('Test 8: Islington additional HMO from Feb 2026', () => {
+  // Test 8: Islington additional HMO (borough-wide)
+  it('Islington additional HMO', () => {
     const result = checkLicensing({
       borough: 'Islington',
       ward: 'Barnsbury',
@@ -224,16 +196,13 @@ describe('Licensing Decision Logic', () => {
       num_households: 2,
       shares_facilities: true,
       tenancy_type: 'hmo',
-      is_section_257: false,
-      accredited_landlord: false,
-      epc_abc: false,
     });
     const types = result.licences.map((l) => l.type);
     expect(types).toContain('Additional HMO');
   });
 
-  // Test 9: Waltham Forest, 1 occupant — selective check
-  it('Test 9: Waltham Forest selective licence (ward covered)', () => {
+  // Test 9: Waltham Forest — borough-wide selective
+  it('Waltham Forest selective licence (borough-wide)', () => {
     const result = checkLicensing({
       borough: 'Waltham Forest',
       ward: 'Leyton',
@@ -241,17 +210,13 @@ describe('Licensing Decision Logic', () => {
       num_households: 1,
       shares_facilities: false,
       tenancy_type: 'single_household',
-      is_section_257: false,
-      accredited_landlord: false,
-      epc_abc: false,
     });
-    // Waltham Forest covers ALL_EXCEPT_EXCLUDED, Leyton is not excluded
     const types = result.licences.map((l) => l.type);
     expect(types).toContain('Selective');
   });
 
-  // Test 10: Barnet, 2 occupants — no selective
-  it('Test 10: Barnet no selective licensing', () => {
+  // Test 10: Barnet — no selective or additional
+  it('Barnet no selective or additional licensing', () => {
     const result = checkLicensing({
       borough: 'Barnet',
       ward: 'Finchley Church End',
@@ -259,18 +224,99 @@ describe('Licensing Decision Logic', () => {
       num_households: 1,
       shares_facilities: false,
       tenancy_type: 'single_household',
-      is_section_257: false,
-      accredited_landlord: false,
-      epc_abc: false,
+    });
+    expect(result.licences).toHaveLength(0);
+    expect(result.verdictColor).toBe('grey');
+    expect(result.verdictText).toBe('NO LICENCE CURRENTLY REQUIRED');
+  });
+
+  // Test 11: Barnet — mandatory HMO still applies (national law)
+  it('Barnet mandatory HMO still applies', () => {
+    const result = checkLicensing({
+      borough: 'Barnet',
+      ward: 'Finchley Church End',
+      num_occupants: 5,
+      num_households: 2,
+      shares_facilities: true,
+      tenancy_type: 'hmo',
+    });
+    const types = result.licences.map((l) => l.type);
+    expect(types).toContain('Mandatory HMO');
+  });
+
+  // Test 12: Newham — borough-wide selective
+  it('Newham selective licence (borough-wide)', () => {
+    const result = checkLicensing({
+      borough: 'Newham',
+      ward: 'Stratford',
+      num_occupants: 1,
+      num_households: 1,
+      shares_facilities: false,
+      tenancy_type: 'single_household',
+    });
+    const types = result.licences.map((l) => l.type);
+    expect(types).toContain('Selective');
+  });
+
+  // Test 13: Tower Hamlets — additional HMO but no selective
+  it('Tower Hamlets additional HMO, no selective', () => {
+    const result = checkLicensing({
+      borough: 'Tower Hamlets',
+      ward: 'Whitechapel',
+      num_occupants: 3,
+      num_households: 2,
+      shares_facilities: true,
+      tenancy_type: 'hmo',
+    });
+    const types = result.licences.map((l) => l.type);
+    expect(types).toContain('Additional HMO');
+    expect(types).not.toContain('Selective');
+  });
+
+  // Test 14: Hackney ward NOT in selective area
+  it('Hackney ward not in selective area', () => {
+    const result = checkLicensing({
+      borough: 'Hackney',
+      ward: 'Woodberry Down',
+      num_occupants: 1,
+      num_households: 1,
+      shares_facilities: false,
+      tenancy_type: 'single_household',
     });
     const types = result.licences.map((l) => l.type);
     expect(types).not.toContain('Selective');
-    // Advisory note about no selective licensing
-    const noteTexts = result.advisoryNotes.map((n) => n.text);
-    expect(noteTexts.some((t) => t.includes('No selective licensing'))).toBe(true);
+    expect(result.verdictColor).toBe('grey');
   });
 
-  // Test: Unsupported borough
+  // Test 15: Islington ward NOT in selective area
+  it('Islington ward not in selective area', () => {
+    const result = checkLicensing({
+      borough: 'Islington',
+      ward: 'Highbury',
+      num_occupants: 1,
+      num_households: 1,
+      shares_facilities: false,
+      tenancy_type: 'single_household',
+    });
+    const types = result.licences.map((l) => l.type);
+    expect(types).not.toContain('Selective');
+  });
+
+  // Test 16: Non-London borough — no schemes
+  it('Broxbourne no licence needed (non-London)', () => {
+    const result = checkLicensing({
+      borough: 'Broxbourne',
+      ward: 'Any',
+      num_occupants: 1,
+      num_households: 1,
+      shares_facilities: false,
+      tenancy_type: 'single_household',
+    });
+    expect(result.licences).toHaveLength(0);
+    expect(result.verdictColor).toBe('grey');
+  });
+
+  // Test 17: Unsupported borough
   it('returns unsupported for non-covered borough', () => {
     const result = checkLicensing({
       borough: 'Westminster',
@@ -284,137 +330,62 @@ describe('Licensing Decision Logic', () => {
     expect(result.supportedBoroughs).toBeDefined();
   });
 
-  // Test: Section 257 exemption in Hackney (exempt)
-  it('Section 257 exempt from additional licensing in Hackney', () => {
+  // Test 18: Exemption handling
+  it('flags property as exempt when exemptions provided', () => {
     const result = checkLicensing({
       borough: 'Hackney',
       ward: 'Stoke Newington',
-      num_occupants: 4,
-      num_households: 2,
-      shares_facilities: true,
-      tenancy_type: 'hmo',
-      is_section_257: true,
-      accredited_landlord: false,
-      epc_abc: false,
+      num_occupants: 1,
+      num_households: 1,
+      shares_facilities: false,
+      tenancy_type: 'single_household',
+      exemptions: ['local_authority'],
     });
-    const types = result.licences.map((l) => l.type);
-    expect(types).not.toContain('Additional HMO');
-    expect(result.advisoryNotes.some((n) => n.type === 'exemption')).toBe(true);
+    expect(result.verdict).toBe('exempt');
+    expect(result.verdictColor).toBe('exempt');
+    expect(result.licences).toHaveLength(0);
   });
 
-  // Test: Section 257 NOT exempt in Haringey
-  it('Section 257 included in additional licensing in Haringey', () => {
+  // Test 19: Barking and Dagenham shows warning
+  it('Barking and Dagenham shows scheme warning', () => {
+    const result = checkLicensing({
+      borough: 'Barking and Dagenham',
+      ward: 'Any',
+      num_occupants: 1,
+      num_households: 1,
+      shares_facilities: false,
+      tenancy_type: 'single_household',
+    });
+    expect(result.warnings.length).toBeGreaterThan(0);
+    expect(result.warnings[0]).toContain('Barking and Dagenham');
+  });
+
+  // Test 20: Reasoning trail is populated
+  it('includes reasoning trail in results', () => {
+    const result = checkLicensing({
+      borough: 'Hackney',
+      ward: 'Stoke Newington',
+      num_occupants: 1,
+      num_households: 1,
+      shares_facilities: false,
+      tenancy_type: 'single_household',
+    });
+    expect(result.reasoning).toBeDefined();
+    expect(result.reasoning.length).toBeGreaterThan(0);
+    expect(result.reasoning.some(r => r.includes('Hackney'))).toBe(true);
+  });
+
+  // Test 21: Haringey selective with ward alias
+  it('Haringey selective with ward alias matching', () => {
     const result = checkLicensing({
       borough: 'Haringey',
-      ward: 'Tottenham Central',
-      num_occupants: 4,
-      num_households: 2,
-      shares_facilities: true,
-      tenancy_type: 'hmo',
-      is_section_257: true,
-      accredited_landlord: false,
-      epc_abc: false,
-    });
-    const types = result.licences.map((l) => l.type);
-    expect(types).toContain('Additional HMO');
-  });
-
-  // Test: Section 257 exempt in Enfield
-  it('Section 257 exempt from additional licensing in Enfield', () => {
-    const result = checkLicensing({
-      borough: 'Enfield',
-      ward: 'Chase',
-      num_occupants: 3,
-      num_households: 2,
-      shares_facilities: true,
-      tenancy_type: 'hmo',
-      is_section_257: true,
-      accredited_landlord: false,
-      epc_abc: false,
-    });
-    const types = result.licences.map((l) => l.type);
-    expect(types).not.toContain('Additional HMO');
-    expect(result.advisoryNotes.some((n) => n.type === 'exemption')).toBe(true);
-  });
-
-  // Test: Hackney accredited landlord + EPC discount on additional HMO
-  it('applies Hackney discounts correctly', () => {
-    const result = checkLicensing({
-      borough: 'Hackney',
-      ward: 'Stoke Newington',
-      num_occupants: 3,
-      num_households: 2,
-      shares_facilities: true,
-      tenancy_type: 'hmo',
-      is_section_257: false,
-      accredited_landlord: true,
-      epc_abc: true,
-    });
-    const additional = result.licences.find((l) => l.type === 'Additional HMO');
-    expect(additional).toBeDefined();
-    expect(additional.fee.discountAmount).toBeGreaterThan(0);
-    expect(additional.fee.finalFee).toBeLessThan(additional.fee.baseFee);
-  });
-
-  // Test: Haringey discounts
-  it('applies Haringey discounts correctly', () => {
-    const result = checkLicensing({
-      borough: 'Haringey',
-      ward: 'Tottenham Central',
-      num_occupants: 4,
-      num_households: 2,
-      shares_facilities: true,
-      tenancy_type: 'hmo',
-      is_section_257: false,
-      accredited_landlord: true,
-      epc_abc: true,
-    });
-    const additional = result.licences.find((l) => l.type === 'Additional HMO');
-    expect(additional).toBeDefined();
-    // £50 accreditation + £50 EPC = £100 discount
-    expect(additional.fee.discountAmount).toBe(100);
-    expect(additional.fee.finalFee).toBe(1260);
-  });
-
-  // Test: Upcoming changes appear in advisory
-  it('returns upcoming changes for Hackney', () => {
-    const result = checkLicensing({
-      borough: 'Hackney',
-      ward: 'Stoke Newington',
-      num_occupants: 1,
-      num_households: 1,
-      shares_facilities: false,
-      tenancy_type: 'single_household',
-    });
-    expect(result.upcomingChanges.length).toBeGreaterThan(0);
-  });
-
-  // Test: Ward not in Hackney selective area
-  it('Hackney ward not in selective area', () => {
-    const result = checkLicensing({
-      borough: 'Hackney',
-      ward: 'Woodberry Down',
+      ward: 'bruce castle',
       num_occupants: 1,
       num_households: 1,
       shares_facilities: false,
       tenancy_type: 'single_household',
     });
     const types = result.licences.map((l) => l.type);
-    expect(types).not.toContain('Selective');
-    expect(result.verdictColor).toBe('green');
-  });
-
-  // Test: Waltham Forest excluded ward
-  it('Waltham Forest excluded ward has no selective licence', () => {
-    const result = checkLicensing({
-      borough: 'Waltham Forest',
-      ward: 'Hatch Lane',
-      num_occupants: 1,
-      num_households: 1,
-      shares_facilities: false,
-      tenancy_type: 'single_household',
-    });
-    const types = result.licences.map((l) => l.type);
-    expect(types).not.toContain('Selective');
+    expect(types).toContain('Selective');
   });
 });

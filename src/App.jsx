@@ -1,24 +1,27 @@
 import { useState } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import AddressSearch from './components/AddressSearch.jsx';
+import ExemptionCheck from './components/ExemptionCheck.jsx';
 import PropertyConfig from './components/PropertyConfig.jsx';
 import ResultsPanel from './components/ResultsPanel.jsx';
 import BoroughSummary from './components/BoroughSummary.jsx';
 import RecentChecks from './components/RecentChecks.jsx';
 import BulkCheck from './components/BulkCheck.jsx';
 import { checkLicensing } from './logic/licenceChecker.js';
-import boroughsData from './data/boroughs.json';
+import BOROUGH_DATABASE from './data/boroughDatabase.js';
 
 function App() {
   const [addressData, setAddressData] = useState(null);
   const [results, setResults] = useState(null);
   const [propertyConfig, setPropertyConfig] = useState(null);
+  const [exemptions, setExemptions] = useState([]);
   const location = useLocation();
 
   const handleAddressResolved = (data) => {
     setAddressData(data);
     setResults(null);
     setPropertyConfig(null);
+    setExemptions([]);
   };
 
   const handleCheckLicensing = (config) => {
@@ -27,18 +30,20 @@ function App() {
       borough: addressData.borough,
       ward: addressData.ward,
       ...config,
+      exemptions,
     });
     setResults(result);
-    saveToHistory(addressData, config, result);
+    saveToHistory(addressData, result);
   };
 
   const handleReset = () => {
     setAddressData(null);
     setResults(null);
     setPropertyConfig(null);
+    setExemptions([]);
   };
 
-  const saveToHistory = (address, config, result) => {
+  const saveToHistory = (address, result) => {
     try {
       const history = JSON.parse(localStorage.getItem('filey_checks') || '[]');
       const entry = {
@@ -49,7 +54,6 @@ function App() {
         ward: address.ward,
         verdict: result.verdictText,
         verdictColor: result.verdictColor,
-        config,
       };
       history.unshift(entry);
       localStorage.setItem('filey_checks', JSON.stringify(history.slice(0, 20)));
@@ -115,7 +119,10 @@ function App() {
               <div className="space-y-6">
                 <AddressSearch onAddressResolved={handleAddressResolved} />
                 {addressData && !results && (
-                  <PropertyConfig onSubmit={handleCheckLicensing} />
+                  <>
+                    <ExemptionCheck selectedExemptions={exemptions} onExemptionsChange={setExemptions} />
+                    <PropertyConfig onSubmit={handleCheckLicensing} />
+                  </>
                 )}
                 {results && (
                   <ResultsPanel
@@ -144,7 +151,7 @@ function App() {
             decisions.
           </p>
           <p>
-            Data last updated: {boroughsData.metadata?.last_updated || 'Unknown'}. This tool covers
+            Data last updated: {BOROUGH_DATABASE.metadata?.last_updated || 'Unknown'}. This tool covers
             selected London boroughs only.
           </p>
           <p className="text-filey-green-light">
